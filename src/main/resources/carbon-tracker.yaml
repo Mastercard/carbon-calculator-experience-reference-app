@@ -1,25 +1,31 @@
 openapi: 3.0.3
 info:
-  title: Carbon Tracker
-  description: OpenAPI document for Priceless Planet Carbon Tracker Service. Serves Mock Partner Bank service sustainability data for transactions and ability to offset carbon footprint by donating to Priceless Planet and get WebviewURI for Mobile Client.
+  title: Priceless Planet Carbon Tracker API
+  description: |
+    OpenAPI document for Priceless Planet Carbon Tracker Service. This API allows issuers to enrol their customers onto Priceless Planet Carbon Tracker platform so that they can get carbon footprint for their transactions and offset the same by donating for planting tree.
+
+    In addition, this API also allows issuers to retrieve carbon footprint aggregate data for their customers.
+      <br/>
+    ---
+    * **All requests must be signed using OAuth 1.0a. Please refer to [Access Mastercard APIs](https://developer.mastercard.com/platform/documentation/using-oauth-1a-to-access-mastercard-apis/).**
+    ---
+    * **The issuer must provide their user's card details and email address while enrolment. These details must be encrypted before entering transit. Please refer to the [Payload Encryption](https://developer.mastercard.com/platform/documentation/security-and-authentication/securing-sensitive-data-using-payload-encryption/).**
+    ---
+
   contact:
     name: API Support
+    url: https://developer.mastercard.com/
     email: apisupport@mastercard.com
-  license:
-    name: Apache License 2.0
-    url: 'https://www.apache.org/licenses/LICENSE-2.0'
-  version: '1.1.0'
-externalDocs:
-  description: ISO 4217 - Currency Code
-  url: https://en.wikipedia.org/wiki/ISO_4217
+  version: '1.0.0'
 servers:
-  - url: https://sandbox.api.mastercard.com/carbontracker
-    description: Sandbox
   - url: https://api.mastercard.com/carbontracker
     description: Production
+  - url: https://sandbox.api.mastercard.com/carbontracker
+    description: Sandbox
 tags:
   - name: Issuer
     description: Contains APIs which will be consumed by the Issuer's backend system.
+
 
 paths:
   /issuers/users:
@@ -27,11 +33,11 @@ paths:
       tags:
         - Issuer
       summary: Allows issuer to enrol their customers onto Priceless Planet Carbon Tracker platform.
-      description: Used to enrol a user for Priceless Planet Carbon Tracker so that she can track the carbon usage for her transactions and offset the same by donating for planting tree.
+      description: Used to enrol users for Priceless Planet Carbon Tracker so that they can track the carbon usage for their transactions and offset the same by donating for planting tree.
       operationId: UserRegistration
       x-mastercard-api-encrypted: true
       requestBody:
-        $ref: '#/components/requestBodies/EncryptedPayload'
+        $ref: '#/components/requestBodies/UserProfile'
       responses:
         "200":
           $ref: '#/components/responses/UserReference'
@@ -42,7 +48,7 @@ paths:
     get:
       tags:
         - Issuer
-      summary: Used to retrieve Short-Lived URL for User to view their carbon footprints and contributions to Priceless Planet.
+      summary: Used to retrieve Short-Lived URL of user's dashboard to view their carbon footprints and contributions to Priceless Planet.
       description: Allows issuers to retrieve Short-Lived URL for an enrolled user. Issuer needs to load this URL within their application so that user can view their dashboard containing carbon footprints and donation.
       operationId: GetAuthToken
       parameters:
@@ -52,13 +58,15 @@ paths:
           $ref: '#/components/responses/Dashboard'
         "400":
           $ref: '#/components/responses/BadRequestError'
+        "404":
+          $ref: '#/components/responses/UserNotFoundError'
 
   /issuers/users/{userid}/aggregate-carbon-scores:
     get:
       tags:
         - Issuer
       summary: Fetches monthly aggregate carbon score for the transactions.
-      description: Allows issuers to retrieve an aggregate carbon footprint for a user.
+      description: Allows issuers to retrieve an aggregate carbon footprint for the transactions done by a user.
       operationId: GetAggregateCarbonScore
       parameters:
         - $ref: '#/components/parameters/UserID'
@@ -67,76 +75,56 @@ paths:
           $ref: '#/components/responses/AggregateCarbonScore'
         "400":
           $ref: '#/components/responses/BadRequestError'
-
+        "404":
+          $ref: '#/components/responses/UserNotFoundError'
 components:
   requestBodies:
-    EncryptedPayload:
+    UserProfile:
       description: User's Personal and Card information which needs to be registered onto Priceless Planet Carbon Tracker platform. This endpoint uses Mastercard payload encryption. Please refer to the **[Payload Encryption](https://mstr.cd/2UPfda0)** page for implementation details.
       required: true
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/EncryptedPayload'
-
-    WebviewAggregateSearchCriteria:
-      description: |
-        Request should conatin aggregate level as one of the below
-        * 0 = Daily
-        * 1 = Weekly
-        * 2 = Monthly
-        * 3 = Yearly
-      required: true
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/WebviewAggregateSearchCriteria'
-
-    OneTimeDonation:
-      description: |
-        Request should conatin aount to donate and payment card id which is to be used for making donation.
-      required: true
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/OneTimeDonation'
-
+            $ref: '#/components/schemas/UserProfile'
   schemas:
-    EncryptedPayload:
-      title: EncryptedPayload
+    UserProfile:
+      title: UserProfile
       type: object
-      description: The request object for securely transfering sensitive information from client to server.
+      description: The request object for enrolling a new user onto Priceless Planet Carbon Tracker platform.
       required:
-        - encryptedData
-        - encryptedKey
-        - oaepHashingAlgorithm
-        - publicKeyFingerprint
+        - cardNumber
+        - billingAddress
+        - email
+        - locale
+        - name
+        - expiryInfo
+        - cardBaseCurrency
+        - cardholderName
       properties:
-        encryptedData:
+        email:
+          $ref: '#/components/schemas/Email'
+        name:
+          $ref: '#/components/schemas/UserName'
+        cardholderName:
           type: string
-          minLength: 128
-          maxLength: 54000
-        encryptedKey:
+          description: Name of the card holder. (format- First Name Last Name)
+          minLength: 1
+          maxLength: 100
+          example: John Doe
+        cardNumber:
+          $ref: '#/components/schemas/CardNumber'
+        cardBaseCurrency:
+          $ref: '#/components/schemas/CurrencyCode'
+        expiryInfo:
+          $ref: '#/components/schemas/CardExpiry'
+        billingAddress:
+          $ref: '#/components/schemas/Address'
+        locale:
           type: string
-          minLength: 512
-          maxLength: 512
-        oaepHashingAlgorithm:
-          type: string
-          minLength: 6
-          maxLength: 6
-        publicKeyFingerprint:
-          type: string
-          minLength: 64
-          maxLength: 1000
-        iv:
-          type: string
-          minLength: 32
-          maxLength: 32
-      example:
-        encryptedData: 'bb42e8e44b0e0536804b731df966d242a8182c2f21f5772a161dca9685ee76f07d23e40fa8fb9938169458e0ca659f477291f0153754687da2c4570d9d2f8bde'
-        encryptedKey: '516fff52106b789d908b491d1a78ec7749dddf8436eef3b770fcc04aa0e2cd912c55159a6cc99fdebce2d3a085cb66d36ba0e050fce134bdee6571abf3d787f12671ff5c5a8fea9000b1143a12f43933f25c8f3a79086d4524b7efd9c24a8914e6625f9509e5c6b913a35b06b6f81d47ba44abb5c5d0f14d1d8ceddad17afdf5215d9a4e1f3152898ea83d767105772bb87a979f1bfe0ba86d53f6727541bd459da782358d187b6317b34c5888fcd042e03fb7d4dd09dd4cee7fd4edd1655cdeabda31deb057a952cb3a96429850d37cea1a5c9c4266f0971962840042c7a7dade6c1605349671a5e5f6887b7467b3a16404e0e5f5db7104a2fd9096a3986a2b'
-        oaepHashingAlgorithm: 'SHA256'
-        publicKeyFingerprint: '31d5808a1994dd6c142afe2866274df756bf685970106ea5b2a73d587104f17e'
-        iv: '6d3a83b3fb0db252b0bd9e3bbb7f2ca2'
+          description: User locale which is registered with issuer.
+          minLength: 1
+          maxLength: 100
+          example: en-US
     CurrencyCode:
       title: currencyCode
       type: string
@@ -145,18 +133,119 @@ components:
       minLength: 3
       pattern: '^[A-Za-z]{3}$'
       example: EUR
+    CardExpiry:
+      type: object
+      properties:
+        month:
+          type: string
+          example: 10
+          description: Denotes a month by when the card will be expired.
+          pattern: '^[0-9]{2}$'
+        year:
+          type: string
+          description: Denotes a year by when the card will be expired.
+          example: 2024
+          pattern: '^[0-9]{4}$'
+      title: CardExpiry
+    CardNumber:
+      type: string
+      minLength: 16
+      maxLength: 16
+      pattern: '^\d{16}$'
+      description: Original payment card number in full.
+      example: 5344035171229750
+    Address:
+      type: object
+      required:
+        - country
+        - postalCode
+        - type
+        - locality
+      properties:
+        country:
+          description: The addresses country in two-character ISO 3166-1 alpha-2 format.
+          type: string
+          example: USA
+          minLength: 1
+          maxLength: 10
+        locality:
+          description: The city, district, suburb, town or village of the address.
+          type: string
+          minLength: 1
+          maxLength: 100
+          example: Rly Station
+        postalCode:
+          description: The address postal code, which is the zip code or equivalent.
+          type: string
+          example: 11746
+          minLength: 1
+          maxLength: 10
+        region:
+          type: string
+          description: The region to which the address belongs to.
+          example: Huntington
+          minLength: 1
+          maxLength: 100
+        streetAddress:
+          type: string
+          description: Denotes street address.
+          minLength: 1
+          maxLength: 100
+          example: 7832 West Elm Street
+        type:
+          type: string
+          description: Denotes type of address. (e.g. home or work)
+          example: 'work'
+          minLength: 1
+          maxLength: 100
+      title: Address
+    Email:
+      type: object
+      properties:
+        type:
+          type: string
+          description: Denotes type of email (e.g. home)
+          minLength: 1
+          maxLength: 10
+          example: home
+        value:
+          type: string
+          description: Denotes email address.
+          minLength: 5
+          maxLength: 100
+          example: John.Doe@mail.com
+      title: Email
+    UserName:
+      type: object
+      required:
+        - firstName
+        - lastName
+      properties:
+        firstName:
+          type: string
+          example: John
+          minLength: 1
+          maxLength: 100
+          description: Denotes First name of user.
+        lastName:
+          type: string
+          description: Denotes Last name of user.
+          minLength: 1
+          maxLength: 100
+          example: Doe
+      title: Username
     UserReference:
       title: UserReference
       type: object
       description: Successful user enrolment response
       required:
-        - last4fpan
+        - cardNumberLastFourDigits
         - status
         - userPPCTId
       properties:
         userid:
           $ref: '#/components/schemas/UserID'
-        last4fpan:
+        cardNumberLastFourDigits:
           type: string
           minLength: 4
           maxLength: 4
@@ -176,6 +265,7 @@ components:
       pattern: '^[0-9A-Fa-f-]{36}'
       description: Unique identifier for a user enrolled into Priceless Planet Carbon Tracker platform.
       example: f5d88571-ac15-465a-a0d8-1ad1327b9a06
+
     Dashboard:
       type: object
       properties:
@@ -191,489 +281,26 @@ components:
           minLength: 1
           maxLength: 10
           example: 300000
-    OneTimeDonation:
-      type: object
-      required:
-        - amount
-        - cardId
-      properties:
-        amount:
-          type: string
-          example: 45
-          description: Donation amount.
-        cardId:
-          type: string
-          example: "652ce9ff-fa5f-4e9f-8151-c73fa20088f7"
-          description: Unique id of a payment card which needs to be used for making donation.
-      title: OneTimeDonation
-    DonateCards:
-      type: array
-      description: This object holds the list of Cards User can Donate to Priceless Planet with.
-      items:
-        $ref: '#/components/schemas/DonateCard'
-    DonateCard:
-      type: object
-      description: This object holds the list of Cards User can Donate to Priceless Planet with.
-      properties:
-        cardId:
-          type: string
-          example: "eca5e1ee6fb7f105c3b0b1ca78ba7a9ee02574e4"
-          description: Unique identifer of payment card.
-        last4pan:
-          type: string
-          example: "3456"
-          description: last four digits of actual FPAN.
-    HistoricalTransactionFootprints:
-      title: HistoricalTransactionFootprints
-      description: Response object which holds all the transaction footprints for historical transactions.
-      properties:
-        count:
-          description: The number of items in this batch (the size of the item array).
-          type: integer
-          example: 5
-        offset:
-          description: The number of items you asked the start of the list to be offset from.
-          type: integer
-          example: 10
-        limit:
-          description: The number of items you asked the list to be limited to.
-          type: integer
-          example: 5
-        total:
-          description: The total number of items in the collection.
-          type: integer
-          example : 50
-        items:
-          description: |
-            List of `HistoricalTransactionFootprint` object.
-          type: array
-          minItems: 1
-          maxItems: 5000
-          items:
-            $ref: '#/components/schemas/HistoricalTransactionFootprint'
-    HistoricalTransactionFootprint:
-      title: HistoricalTransactionFootprint
-      type: object
-      description: A single transaction footprint along with transaction info for a corresponding payment transaction.
-      required:
-        - transactionMetadata
-        - transactionFootprint
-      properties:
-        transactionMetadata:
-          $ref: '#/components/schemas/TransactionMetadata'
-        transactionFootprint:
-          $ref: '#/components/schemas/TransactionFootprint'
-    TransactionMetadata:
-      title: TransactionMetadata
-      type: object
-      description: Metadata about a transaction.
-      required:
-        - id
-        - retrievalRefNumber
-        - processingCode
-        - dateAndTime
-        - merchantName
-        - acquiringInstitutionCountryCode
-        - acquiringInstitutionCode
-        - amount
-        - currencyCode
-        - indicator
-      properties:
-        id:
-          title: id
-          type: string
-          description: A unique id associated with a transaction (same as in request).
-          maxLength: 100
-          minLength: 1
-          pattern: ^[\w\-\_]{1,100}
-          example: ee421c25-f928-4bf6-b884-3600b76b860d
-        retrievalRefNumber:
-          title: retrievalRefNumber
-          type: string
-          description: DE 37 (Retrieval Reference Number) is a document reference number supplied by the system
-            retaining the original source document of the transaction and assists in locating that source
-            document or a copy thereof.
-          maxLength: 12
-          minLength: 12
-          example: MCC000000100
-        processingCode:
-          title: processingCode
-          type: string
-          description: DE 3.1 (Cardholder Transaction Type Code) describes the specific transaction type.
-          maxLength: 2
-          minLength: 2
-          example: 00
-        dateAndTime:
-          title: dateAndTime
-          type: string
-          description: Transaction Date and time in CST Timezone (e.g YYYY-MM-DDThh:mmTZD. eg 1997-07-16T19:20+01:00). This is the date and time when Transaction is recorded on mastercard's authorization system.
-          maxLength: 25
-          minLength: 25
-          example: 2018-07-02T19:20+01:00
-        merchantName:
-          title: merchantName
-          type: string
-          description: DE 43.1 (Card Acceptor/Merchant Name) is the merchant 'doing business as' name.
-          maxLength: 25
-          minLength: 1
-          example: ABC Store
-        acquiringInstitutionCountryCode:
-          title: acquiringInstitutionCountryCode
-          type: string
-          description: DE 19 (Acquiring Institution Country Code) is the code of the country where the acquiring institution is located.
-          maxLength: 3
-          minLength: 3
-          example: USA
-        acquiringInstitutionCode:
-          title: acquiringInstitutionCode
-          type: string
-          description: DE 32 (Acquiring Institution ID Code) identifies the acquiring institution (for example, merchant bank) or its agent.
-          maxLength: 11
-          minLength: 11
-          example: 12312312312
-        amount:
-          title: amount
-          type: number
-          format: double
-          description: Transaction Amount.
-          maxLength: 10
-          minLength: 1
-          example: 25.5
-        currencyCode:
-          $ref: '#/components/schemas/CurrencyCode'
-        indicator:
-          title: indicator
-          type: string
-          description: Transaction type (AUTH = AT, CLEAR = CL, REVERSAL = RT or REFUND = RFT).
-          maxLength: 8
-          minLength: 4
-          example: AT
-    TransactionId:
-      type: string
-      description: A unique id associated with a payment transaction, e.g. original payment transaction id. The same id will be returned in the response corresponding to its payment transaction.
-      minLength: 1
-      maxLength: 100
-      pattern: ^[\w\-\_]{1,100}
-    TransactionFootprint:
-      title: TransactionFootprint
-      type: object
-      description: A single transaction footprint calculated for a corresponding payment transaction.
-      required:
-        - transactionId
-        - mcc
-      allOf:
-        - $ref: '#/components/schemas/CarbonAndWaterUsage'
-      properties:
-        transactionId:
-          $ref: '#/components/schemas/TransactionId'
-        mcc:
-          type: string
-          description: Merchant category code of a payment transaction that uniquely defines a merchant business (same as in request).
-          minLength: 1
-          maxLength: 4
-          pattern: ^\d{1,4}
-          example: 3997
-        category:
-          $ref: '#/components/schemas/Category'
-    CarbonAndWaterUsage:
-      title: CarbonAndWaterUsage
-      type: object
-      description: Object to hold carbon and water usage data.
-      properties:
-        carbonEmissionInGrams:
-          title: carbonEmissionInGrams
-          type: number
-          description: The transaction's CO2 emission in grams.
-          example: 48.52
-        carbonEmissionInOunces:
-          title: carbonEmissionInOunces
-          type: number
-          description: The transaction's CO2 emission in ounces.
-          example: 0.99
-        waterUseInCubicMeters:
-          title: waterUseInCubicMeters
-          type: number
-          description: The transaction's water use in cubic meters.
-          example: 57.50
-        waterUseInGallons:
-          title: waterUseInGallons
-          type: number
-          description: The transaction's water use in US gallons.
-          example: 15190.24
-        carbonSocialCost:
-          $ref: '#/components/schemas/CarbonSocialCost'
-        waterUseSocialCost:
-          $ref: '#/components/schemas/WaterUseSocialCost'
-    CarbonSocialCost:
-      title: CarbonSocialCost
-      type: object
-      description: The response object that contains a transaction's social cost of carbon use.
-      properties:
-        value:
-          title: value
-          type: number
-          description: Actual value of CarbonSocialCost
-          maximum: 1000000000
-          exclusiveMaximum: false
-          minimum: -1000000000
-          exclusiveMinimum: false
-          example: 14
-        currencyCode:
-          $ref: '#/components/schemas/CurrencyCode'
-    WaterUseSocialCost:
-      title: WaterUseSocialCost
-      type: object
-      description: The response object that contains a transaction's social cost of water use.
-      properties:
-        value:
-          title: value
-          type: number
-          description: Actual value of CarbonSocialCost
-          maximum: 1000000000
-          exclusiveMaximum: false
-          minimum: -1000000000
-          exclusiveMinimum: false
-          example: 24
-        currencyCode:
-          $ref: '#/components/schemas/CurrencyCode'
-    Category:
-      title: Category
-      type: object
-      description: User understandable information about a MCC categorization.
-      properties:
-        mainCategory:
-          title: mainCategory
-          type: string
-          description: Main category to which a MCC belongs.
-          minLength: 5
-          maxLength: 100
-          pattern: ^[\w\-\_\&\,]{5,100}
-          example: Lesure & Entertainment
-        subCategory:
-          title: subCategory
-          type: string
-          description: Sub-category of a category to which a MCC belongs.
-          minLength: 5
-          maxLength: 100
-          pattern: ^[\w\-\_\&\,]{5,100}
-          example: Hotels & Vacation
-        sector:
-          title: sector
-          type: string
-          description: Sector of a category to which a MCC belongs.
-          minLength: 5
-          maxLength: 100
-          pattern: ^[\w\-\_\&\,]{5,100}
-          example: Hotels, Motels & Resorts
-        sectorCode:
-          title: sectorCode
-          type: string
-          description: Unique code assigned to each sector.
-          minLength: 3
-          maxLength: 3
-          pattern: ^\d{3}
-          example: 604
-
-    TransactionStatus:
-      type: object
-      properties:
-        transactionId:
-          type: string
-          example: 5d3c4ef1-d449-4d79-a456-fb6ba3f1cab8
-          description: A unique id associated with a payment transaction, e.g. original payment transaction id. The same id will be returned in the response corresponding to its payment transaction.
-        transactionMessage:
-          type: string
-          example: Transaction APPROVED
-          description: Transaction Message associated with a payment transaction.
-        transactionStatus:
-          type: string
-          example: SUCCESS
-          description: Transaction Message of a transaction uniquely defines a transaction status
-      title: TransactionStatus
-
     AggregateCarbonScore:
       type: object
       properties:
         carbonEmissionInGrams:
           type: string
-          example: 21041.25
-          description: The transaction's CO2 emission in grams.
+          description: An aggregate value of CO2 emission in grams.
+          minLength: 1
+          maxLength: 10
+          example: 3245
         aggregateDate:
           type: string
-          example: "november-2020"
-          description: The transaction's aggregated date.
+          description: Denotes aggregate duration.
+          minLength: 1
+          maxLength: 20
+          example: november-2020
 
-    PaymentCardId:
-      type: string
-      minLength: 36
-      maxLength: 36
-      pattern: ^[0-9A-Fa-f\-]{36}
-      description: Unique identifier for a payment card.
-      example: 'c5d88571-ac15-465a-a0d8-1ad1327b9a06'
-    WebviewAggregateSearchCriteria:
-      title: AggregateSearchCriteria
-      type: object
-      description: Request object which holds the criteria (i.e. list of payment card ids and aggregate type) for retrieving aggregate transactions.
-      required:
-        - aggregateType
-      properties:
-        aggregateType:
-          type: integer
-          minimum: 0
-          maximum: 3
-          description: |
-            Aggregate type for which aggregate needs to be calculated. Supported values are
-            * 0=daily
-            * 1=weekly
-            * 2=monthly
-            * 3=yearly
-          example: '0'
-    AggregateTransactionFootprints:
-      title: AggregateTransactionFootprints
-      type: array
-      description: This object contains aggregated transaction footprints for single payment card id.
-      items:
-        $ref: '#/components/schemas/AggregateTransactionFootprint'
-    AggregateTransactionFootprint:
-      title: AggregateTransactionFootprint
-      type: object
-      description: This object contains aggregated transaction footprint for single payment card id.
-      required:
-        - paymentCardId
-        - footprintAggregations
-      properties:
-        paymentCardId:
-          $ref: '#/components/schemas/PaymentCardId'
-        footprintAggregations:
-          type: array
-          minItems: 1
-          maxItems: 186
-          items:
-            $ref: '#/components/schemas/FootprintAggregation'
-    FootprintAggregation:
-      title: FootprintAggregation
-      type: object
-      description: This object contains aggregation of carbon and water score for a payment card Id and given aggregation level.
-      properties:
-        aggregateValue:
-          type: string
-          minLength: 10
-          maxLength: 25
-          description: |
-            Aggregate duration for which aggregate has been calculated.
-            * Daily = 2020-07-13
-            * Weekly = week-47 (i.e. Week of the year. Starting from week 1 to week 52).
-            * Monthly = july-2019
-            * Yearly = 2019
-          example : '2019'
-        carbonEmissionInGrams:
-          title: carbonEmissionInGrams
-          type: number
-          description: The transaction's CO2 emission in grams.
-          example: 21041.25
-        carbonEmissionInOunces:
-          title: carbonEmissionInOunces
-          type: number
-          description: The transaction's CO2 emission in ounces.
-          example: 742.21
-        waterUseInCubicMeters:
-          title: waterUseInCubicMeters
-          type: number
-          description: The transaction's water use in cubic meters.
-          example: 2.66
-        waterUseInGallons:
-          title: waterUseInGallons
-          type: number
-          description: The transaction's water use in US gallons.
-          example: 701.95
-        carbonSocialCost:
-          $ref: '#/components/schemas/CarbonSocialCost'
-        waterUseSocialCost:
-          $ref: '#/components/schemas/WaterUseSocialCost'
-    Image:
-      type: object
-      properties:
-        url:
-          type: string
-          format: uri
-          description: Specifies the path to the image
-          example: "https://www.mastercard.us/content/dam/public/mastercardcom/na/us/en/vision/images/sustainability/hands-planting-tree-with-caption-1280x720.jpg"
-    Contributions:
-      type: object
-      properties:
-        totalTreesFunded:
-          type: integer
-          format: int32
-          description: >-
-            The total number of trees funded as part of planting projects associated with this partner.
-          example: 10
-        plantingProjects:
-          type: array
-          items:
-            type: object
-            properties:
-              details:
-                type: object
-                properties:
-                  name:
-                    type: string
-                    example: Amazon Rainforest
-                    pattern: ^[a-zA-Z0-9\s'’\-\.\$(),%—\/]+$
-                    maxLength: 50
-                  description:
-                    type: string
-                    maxLength: 1000
-                    pattern: ^[a-zA-Z0-9\s'’\-\.\$(),%—\/]+$
-                    example: >-
-                      The Atlantic Forest, also known as Mata Atlantica, once covered 130 million hectares across Brazil.
-                      Now, this tropical rainforest ecosystem is home to more than half of the country’s population.
-                  country:
-                    type: string
-                    description: ISO 3166 country short name
-                    pattern: ^[a-zA-Z\s\\(\\),\\.]+$
-                    minLength: 3
-                    maxLength: 50
-                    example: Brazil
-                  startDate:
-                    type: string
-                    description: The starting date for the planting project.
-                    example: '2019-04-21'
-                  endDate:
-                    type: string
-                    description: The end date for the planting project.
-                    example: '2022-04-21'
-                  target:
-                    type: integer
-                    format: int64
-                    example: 2000000
-                  treesPlanted:
-                    type: integer
-                    format: int64
-                    example: 1680000
-                  percentageCanopyCover:
-                    type: number
-                    format: double
-                    example: 94
-                  carbonSequestered:
-                    type: integer
-                    format: int64
-                    example: 50
-                  images:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/Image'
-              treesFunded:
-                type: integer
-                format: int32
-                description: >-
-                  The total number of trees funded by this donor as part of this planting project.
-                example: 10
-          description: >-
-            The details about the planting projects.
     ErrorWrapper:
       title: ErrorWrapper
       type: object
-      description: Tdhe error response object which gets returned in case of any error.
+      description: The error response object which gets returned in case of any error.
       required:
         - Errors
       properties:
@@ -682,7 +309,7 @@ components:
     Errors:
       title: Errors
       type: object
-      description: Error object which returns list of Error objects.
+      description: Error object which contains list of Error objects.
       required:
         - Error
       properties:
@@ -693,7 +320,7 @@ components:
     Error:
       title: Error
       type: object
-      description: Error object which contains details about error.
+      description: Error object which contains details about single error.
       required:
         - Source
         - ReasonCode
@@ -702,43 +329,41 @@ components:
       properties:
         Source:
           type: string
-          description: The application name that generated this error. Every error message that is generated and returned by the gateway will have this field equal to Gateway. Other possible values are 'Carbon-Calculator' and 'Service-Provider'.
+          description: The application name that generated this error. If an error is generated and returned by the gateway, then this field will have value as `Gateway`. Other possible values are `CARBON CALCULATOR`, `DONATE`, `PRICELESS PLANET CARBON TRACKER` or `PRICELESS PLANET`.
           minLength: 1
           maxLength: 100
-          example: Service-Provider
+          example: 'Carbon Tracker'
         ReasonCode:
           type: string
           description: A unique constant identifying the error case encountered during request processing.
           minLength: 1
           maxLength: 100
-          example: INVALID_FPAN
+          example: 'INVALID_REQUEST_PARAMETER'
         Description:
           type: string
-          description: Short description of the ReasonCode field.
+          description: Short description of the `ReasonCode` field.
           minLength: 10
           maxLength: 1000
-          example: The card number in the request is either invalid or it does not match with your currently supported account range. Try again with a valid card number or update the supported account range.
+          example: One of the request parameters is invalid, try again with correct request.
         Recoverable:
           type: boolean
           description: Indicates whether this error will always be returned for this request, or retrying could change the outcome.
           example: false
         Details:
           type: string
+          description: (Optional) Where appropriate, indicates detailed information about data received and calculated during request processing, to help the user with diagnosing errors.
           minLength: 0
           maxLength: 5000
-          example: ''
-          description: (Optional) Where appropriate, indicates detailed information about data received and calculated during request processing, to help the user with diagnosing errors.
-
+          example: email must not be null.
   parameters:
     UserID:
       in: path
       name: userid
-      description: Unique identifier for a cardholder enrolled into Priceless Planet Carbon Tracker Service.
+      description: Unique identifier for a user enrolled into Priceless Planet Carbon Tracker platform.
       required: true
       example: f5d88571-ac15-465a-a0d8-1ad1327b9a06
       schema:
         $ref: '#/components/schemas/UserID'
-
   responses:
     Dashboard:
       description: The response object contains Short-Live URL along with authentication token.
@@ -752,6 +377,16 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/UserReference'
+    AggregateCarbonScore:
+      description: The response object contains aggregation of carbon footprint.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/AggregateCarbonScore'
+          examples:
+            AggregateCarbonScores:
+              $ref: '#/components/examples/AggregateCarbonScore'
+
     UserEnrolmentBadRequestError:
       description: This response code is returned when a request is invalid or data in the request is not valid or a card/user is already registered on the server.
       content:
@@ -761,64 +396,11 @@ components:
           examples:
             BadRequestError:
               $ref: '#/components/examples/BadRequestError'
-            UserAlreadyExistsError:
-              $ref: '#/components/examples/UserAlreadyExistsError'
             RequestDecryptionError:
               $ref: '#/components/examples/RequestDecryptionError'
-    AggregateCarbonScore:
-      description: The response object contains aggregation of carbon footprint.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/AggregateCarbonScore'
-          examples:
-            AggregateCarbonScore:
-              $ref: '#/components/examples/AggregateCarbonScore'
 
-    HistoricalTransactionFootprints:
-      description: This response code is returned when a request is accepted and successfully processed. A corresponding response will be returned for the API caller.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/HistoricalTransactionFootprints'
-          examples:
-            HistoricalTransactionFootprints:
-              $ref: '#/components/examples/HistoricalTransactionFootprints'
-    DonateCards:
-      description: Cards uuids to donate with.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/DonateCards'
-    Contributions:
-      description: Contributions statistics were succesfully retrieved.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/Contributions'
-    AggregateTransactionFootprints:
-      description: This response code is returned when a request is accepted and successfully processed.  A corresponding response will be returned for the API caller.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/AggregateTransactionFootprints'
-          examples:
-            DailyAggregateTransactionFootprint:
-              $ref: '#/components/examples/DailyAggregateTransactionFootprint'
-            WeeklyAggregateTransactionFootprint:
-              $ref: '#/components/examples/WeeklyAggregateTransactionFootprint'
-            MonthlyAggregateTransactionFootprint:
-              $ref: '#/components/examples/MonthlyAggregateTransactionFootprint'
-            YearlyAggregateTransactionFootprint:
-              $ref: '#/components/examples/YearlyAggregateTransactionFootprint'
-    TransactionStatus:
-      description: Make a single donation to plant trees over period of 5 years.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/TransactionStatus'
     BadRequestError:
-      description: This response code is returned when a request is invalid or data in the request is not valid or a card is already registered on the server.
+      description: This response code is returned when a request is invalid or data in the request is not valid.
       content:
         application/json:
           schema:
@@ -826,348 +408,46 @@ components:
           examples:
             BadRequestError:
               $ref: '#/components/examples/BadRequestError'
-            UserNotFoundError:
-              $ref: '#/components/examples/UserNotFoundError'
-    WebviewUnauthorisedTokenError:
-      description: Request has invalid token present, either due to expiry, wrong signature, or malformed. Issue new through partner bank.
+    UserNotFoundError:
+      description: This response code is returned when a user not found or been removed
       content:
         application/json:
+          examples:
+            UserNotFoundError:
+              $ref: '#/components/examples/UserNotFoundError'
           schema:
             $ref: '#/components/schemas/ErrorWrapper'
-          examples:
-            WebviewUnauthorisedSignatureError:
-              $ref: '#/components/examples/WebviewUnauthorisedSignatureError'
-            WebviewExpiredTokenError:
-              $ref: '#/components/examples/WebviewExpiredTokenError'
 
   examples:
     AggregateCarbonScore:
       value:
         carbonEmissionInGrams: 32.45
         aggregateDate: november-2020
-    HistoricalTransactionFootprints:
-      value:
-        count: 2
-        offset: 1
-        limit: 2
-        total: 5
-        items:
-          - transactionMetadata:
-              id: 'ee421c25-f928-4bf6-b884-3600b76b860d'
-              retrievalRefNumber: 'MCC000100'
-              processingCode: '00'
-              dateAndTime: '2018-07-02T19:20+01:00'
-              merchantName: 'ABC Store'
-              acquiringInstitutionCountryCode: 'USA'
-              acquiringInstitutionCode: '12312312312'
-              amount: '25.50'
-              currencyCode: 'USD'
-              indicator: 'AT'
-            transactionFootPrint:
-              mcc: 3997
-              carbonEmissionInGrams: 48.52
-              carbonEmissionInOunces: 1.71
-              carbonSocialCost:
-                value: 14.00
-                currencyCode: 'USD'
-              waterUseInCubicMeters: 57.50
-              waterUseInGallons: 15190.24
-              waterUseSocialCost:
-                value: 24.00
-                currencyCode: 'USD'
-              category:
-                mainCategory: 'Lesure & Entertainment'
-                subCategory: 'Hotels & Vacation'
-                sector: 'Hotels, Motels & Resorts'
-                sectorCode: '604'
-
-          - transactionMetadata:
-              id: 'fdc4626c-f51e-4ba6-9728-c79ac1d9aec8'
-              retrievalRefNumber: 'MCC000480'
-              processingCode: '01'
-              dateAndTime: '2019-12-25T19:20+01:00'
-              merchantName: 'ABC Store'
-              acquiringInstitutionCountryCode: 'USA'
-              acquiringInstitutionCode: '23423423423'
-              amount: '30.00'
-              currencyCode: 'USD'
-              indicator: 'CL'
-            transactionFootPrint:
-              mcc: 5962
-              carbonEmissionInGrams: 27.98
-              carbonEmissionInOunces: 0.99
-              carbonSocialCost:
-                value: 7.98
-                currencyCode: 'EUR'
-              waterUseInCubicMeters: 32.98
-              waterUseInGallons: 8712.66
-              waterUseSocialCost:
-                value: 12.98
-                currencyCode: 'EUR'
-              category:
-                mainCategory: 'Shopping'
-                subCategory: 'Department Store'
-                sector: 'Specialty Retail & Services'
-                sectorCode: '302'
-    DailyAggregateTransactionFootprint:
-      value:
-        - paymentCardId: '8a581a55-bcea-4c3e-8e0f-9b4726e5e6d3'
-          footprintAggregation:
-            - carbonEmissionInGrams: 27.98
-              carbonEmissionInOunces: 0.99
-              carbonSocialCost:
-                value: 7.98
-                currencyCode: 'EUR'
-              waterUseInCubicMeters: 32.98
-              waterUseInGallons: 8712.66
-              waterUseSocialCost:
-                value: 12.98
-                currencyCode: 'EUR'
-              aggregateValue: '2020-07-14'
-            - carbonEmissionInGrams: 27.98
-              carbonEmissionInOunces: 0.99
-              carbonSocialCost:
-                value: 7.98
-                currencyCode: 'EUR'
-              waterUseInCubicMeters: 32.98
-              waterUseInGallons: 8712.66
-              waterUseSocialCost:
-                value: 12.98
-                currencyCode: 'EUR'
-              aggregateValue: '2020-07-13'
-        - paymentCardId: '328b62d4-287c-4c9f-a05d-6d4a67f208d8'
-          footprintAggregation:
-            - carbonEmissionInGrams: 22.65
-              carbonEmissionInOunces: 0.94
-              carbonSocialCost:
-                value: 5.67
-                currencyCode: 'EUR'
-              waterUseInCubicMeters: 36.98
-              waterUseInGallons: 4987.12
-              waterUseSocialCost:
-                value: 14.65
-                currencyCode: 'EUR'
-              aggregateValue: '2020-07-14'
-            - carbonEmissionInGrams: 35.24
-              carbonEmissionInOunces: 0.87
-              carbonSocialCost:
-                value: 6.87
-                currencyCode: 'EUR'
-              waterUseInCubicMeters: 35.24
-              waterUseInGallons: 7825.64
-              waterUseSocialCost:
-                value: 14.65
-                currencyCode: 'EUR'
-              aggregateValue: '2020-07-13'
-    WeeklyAggregateTransactionFootprint:
-      value:
-        - paymentCardId: '8a581a55-bcea-4c3e-8e0f-9b4726e5e6d3'
-          footprintAggregation:
-            - carbonEmissionInGrams: 140.52
-              carbonEmissionInOunces: 7.19
-              carbonSocialCost:
-                value: 42.23
-                currencyCode: 'EUR'
-              waterUseInCubicMeters: 210.78
-              waterUseInGallons: 54395.27
-              waterUseSocialCost:
-                value: 85.28
-                currencyCode: 'EUR'
-              aggregateValue: 'week-26'
-            - carbonEmissionInGrams: 142.67
-              carbonEmissionInOunces: 6.94
-              carbonSocialCost:
-                value: 51.32
-                currencyCode: 'EUR'
-              waterUseInCubicMeters: 219.62
-              waterUseInGallons: 55347.64
-              waterUseSocialCost:
-                value: 83.78
-                currencyCode: 'EUR'
-              aggregateValue: 'week-25'
-        - paymentCardId: '328b62d4-287c-4c9f-a05d-6d4a67f208d8'
-          footprintAggregation:
-            - carbonEmissionInGrams: 143.64
-              carbonEmissionInOunces: 6.97
-              carbonSocialCost:
-                value: 39.54
-                currencyCode: 'EUR'
-              waterUseInCubicMeters: 219.43
-              waterUseInGallons: 29394.85
-              waterUseSocialCost:
-                value: 91.37
-                currencyCode: 'EUR'
-              aggregateValue: 'week-26'
-            - carbonEmissionInGrams: 218.31
-              carbonEmissionInOunces: 7.19
-              carbonSocialCost:
-                value: 41.35
-                currencyCode: 'EUR'
-              waterUseInCubicMeters: 215.55
-              waterUseInGallons: 50236.63
-              waterUseSocialCost:
-                value: 92.34
-                currencyCode: 'EUR'
-              aggregateValue: 'week-25'
-    MonthlyAggregateTransactionFootprint:
-      value:
-        - paymentCardId: '8a581a55-bcea-4c3e-8e0f-9b4726e5e6d3'
-          footprintAggregation:
-            - carbonEmissionInGrams: 616.35
-              carbonEmissionInOunces: 31.28
-              carbonSocialCost:
-                value: 210.68
-                currencyCode: 'EUR'
-              waterUseInCubicMeters: 909.27
-              waterUseInGallons: 241597.32
-              waterUseSocialCost:
-                value: 362.28
-                currencyCode: 'EUR'
-              aggregateValue: 'october-2019'
-            - carbonEmissionInGrams: 898.64
-              carbonEmissionInOunces: 32.54
-              carbonSocialCost:
-                value: 211.19
-                currencyCode: 'EUR'
-              waterUseInCubicMeters: 911.34
-              waterUseInGallons: 2425698.15
-              waterUseSocialCost:
-                value: 366.32
-                currencyCode: 'EUR'
-              aggregateValue: 'september-2019'
-        - paymentCardId: '328b62d4-287c-4c9f-a05d-6d4a67f208d8'
-          footprintAggregation:
-            - carbonEmissionInGrams: 614.24
-              carbonEmissionInOunces: 32.21
-              carbonSocialCost:
-                value: 198.36
-                currencyCode: 'EUR'
-              waterUseInCubicMeters: 900.32
-              waterUseInGallons: 236458.87
-              waterUseSocialCost:
-                value: 345.64
-                currencyCode: 'EUR'
-              aggregateValue: 'october-2019'
-            - carbonEmissionInGrams: 612.24
-              carbonEmissionInOunces: 33.65
-              carbonSocialCost:
-                value: 194.34
-                currencyCode: 'EUR'
-              waterUseInCubicMeters: 901.02
-              waterUseInGallons: 254168.17
-              waterUseSocialCost:
-                value: 333.65
-                currencyCode: 'EUR'
-              aggregateValue: 'september-2019'
-    YearlyAggregateTransactionFootprint:
-      value:
-        - paymentCardId: '8a581a55-bcea-4c3e-8e0f-9b4726e5e6d3'
-          footprintAggregation:
-            - carbonEmissionInGrams: 9875.25
-              carbonEmissionInOunces: 345.21
-              carbonSocialCost:
-                value: 2298.54
-                currencyCode: 'EUR'
-              waterUseInCubicMeters: 9785.31
-              waterUseInGallons: 3179880.66
-              waterUseSocialCost:
-                value: 4875.14
-                currencyCode: 'EUR'
-              aggregateValue: '2019'
-            - carbonEmissionInGrams: 9754.25
-              carbonEmissionInOunces: 342.10
-              carbonSocialCost:
-                value: 2164.25
-                currencyCode: 'EUR'
-              waterUseInCubicMeters: 9845.21
-              waterUseInGallons: 3325458.45
-              waterUseSocialCost:
-                value: 4458.24
-                currencyCode: 'EUR'
-              aggregateValue: '2018'
-        - paymentCardId: '328b62d4-287c-4c9f-a05d-6d4a67f208d8'
-          footprintAggregation:
-            - carbonEmissionInGrams: 9458.28
-              carbonEmissionInOunces: 347.98
-              carbonSocialCost:
-                value: 2365.17
-                currencyCode: 'EUR'
-              waterUseInCubicMeters: 9783.94
-              waterUseInGallons: 3248796.21
-              waterUseSocialCost:
-                value: 4587.98
-                currencyCode: 'EUR'
-              aggregateValue: '2019'
-            - carbonEmissionInGrams: 9365.17
-              carbonEmissionInOunces: 349.78
-              carbonSocialCost:
-                value: 3418.67
-                currencyCode: 'EUR'
-              waterUseInCubicMeters: 9873.48
-              waterUseInGallons: 3354973.19
-              waterUseSocialCost:
-                value: 4875.87
-                currencyCode: 'EUR'
-              aggregateValue: '2018'
-    UserAlreadyExistsError:
-      value:
-        Errors:
-          Error:
-            - Source: 'CARBON_TRACKER'
-              ReasonCode: 'USER_ALREADY_EXISTS'
-              Description: 'User with provided email already exists.'
-              Recoverable: false
-              Details: 'Please provide a unique email to register for carbon tracking service.'
-    RequestDecryptionError:
-      value:
-        Errors:
-          Error:
-            - Source: 'CARBON CALCULATOR'
-              ReasonCode: 'CRYPTO_ERROR'
-              Description: 'We are unable to decipher your request, kindly verify your request before trying again. If the problem persist then reach out to your Mastercard associate.'
-              Recoverable: false
-              Details: ''
 
     UserNotFoundError:
       value:
         Errors:
           Error:
-            - Source: 'CARBON_TRACKER'
+            - Source: 'PRICELESS PLANET CARBON TRACKER'
               ReasonCode: 'USER_NOT_FOUND'
-              Description: 'We can not find user details for provided user_ppct_id. Kindly register user through enrolment process.'
+              Description: 'We cannot find user details for provided userId. Kindly register user through enrolment process.'
               Recoverable: false
-              Details: 'Make sure user is enrolled through /user-enrolment API endpoint.'
-
-    WebviewUnauthorisedSignatureError:
+              Details: 'Make sure user is enrolled through /users API endpoint.'
+    RequestDecryptionError:
       value:
         Errors:
           Error:
-            - Source: 'CARBON_TRACKER'
-              ReasonCode: 'INVALID_TOKEN'
-              Description: 'Signature of token provided does not match local signature. Invalid token.'
+            - Source: 'PRICELESS PLANET CARBON TRACKER'
+              ReasonCode: 'CRYPTO_ERROR'
+              Description: 'We are unable to decipher your request, kindly verify your request before trying again. If the problem persist then reach out to your Mastercard associate.'
               Recoverable: false
-              Details: 'null'
-    WebviewExpiredTokenError:
-      value:
-        Errors:
-          Error:
-            - Source: 'CARBON_TRACKER'
-              ReasonCode: 'INVALID_TOKEN'
-              Description: 'Token has expired. Please request new Auth Token.'
-              Recoverable: false
-              Details: 'null'
-
+              Details: ''
     BadRequestError:
       value:
         Errors:
           Error:
-            - Source: 'CARBON_TRACKER'
+            - Source: 'PRICELESS PLANET CARBON TRACKER'
               ReasonCode: 'INVALID_REQUEST_PARAMETER'
               Description: 'One of the request parameters is invalid, try again with correct request.'
               Recoverable: false
               Details: 'email must not be null'
-            - Source: 'Carbon-Calculator'
-              ReasonCode: 'INVALID_REQUEST_PARAMETER'
-              Description: 'One of the request parameters is invalid, try again with correct request.'
-              Recoverable: false
-              Details: 'cardBaseCurrency size must be between 3 and 3'

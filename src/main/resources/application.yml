@@ -11,3 +11,6 @@ mastercard:
       key-file:  #client-encryption.pem
       fingerprint:  #fingerprint
 
+test:
+  data:
+    userid: 2cc27170-3bb2-4ef4-9221-2015bf5e640d  # Update with your user id

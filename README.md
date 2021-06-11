@@ -72,12 +72,16 @@ See also:
 
 ## Use-Cases <a name="use-cases"></a>
 1. **Get Webview URL** <br/>
-endpoint "/dashboards"   
+endpoint "/issuers/users/{userid}/dashboards"   
 Use this endpoint to get a new token with expiry specified.
 
 2. **Get Current Months Carbon Score** <br/> 
-endpoint "/aggregate-carbon-scores"<br/>
-Use this endpoint to display the current months' carbon score, to provide a snapshot of their score prior to opening the dashboard (`Get Webview URL`).
+endpoint "/issuers/users/{userid}/aggregate-carbon-scores"<br/>
+Use this endpoint to display the current months' carbon score, to provide a snapshot of their score prior to opening the dashboard.
+
+3. **Create User** <br/>
+endpoint "/issuers/users" <br/>
+Use this endpoint to enrol their customers onto Priceless Planet Carbon Tracker platform.
 
 More details can be found [here](https://stage.developer.mastercard.com/carbon-tracker/documentation/use-cases/).    
 
