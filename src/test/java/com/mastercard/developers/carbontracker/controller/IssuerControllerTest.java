@@ -1,27 +1,48 @@
 package com.mastercard.developers.carbontracker.controller;
 
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import com.mastercard.developers.carbontracker.service.IssuerService;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
 import org.openapitools.client.model.AggregateCarbonScore;
 import org.openapitools.client.model.Dashboard;
+import org.openapitools.client.model.IssuerConfiguration;
+import org.openapitools.client.model.IssuerProfileDetails;
 import org.openapitools.client.model.UserReference;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
-import static com.mastercard.developers.carbontracker.util.ServiceEndpoints.*;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
+
+import static com.mastercard.developers.carbontracker.util.ServiceEndpoints.ADD_USER;
+import static com.mastercard.developers.carbontracker.util.ServiceEndpoints.AGGREGATE_CARBON_SCORE;
+import static com.mastercard.developers.carbontracker.util.ServiceEndpoints.DASHBOARDS;
+import static com.mastercard.developers.carbontracker.util.ServiceEndpoints.DELETE_USER;
+import static com.mastercard.developers.carbontracker.util.ServiceEndpoints.GET_ISSUER;
+import static com.mastercard.developers.carbontracker.util.ServiceEndpoints.UPDATE_USER;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class IssuerControllerTest {
 
     @Autowired
@@ -32,28 +53,47 @@ public class IssuerControllerTest {
 
     @Autowired
     private IssuerService issuerService;
+    private static String userId = null;
 
-    @Value("${test.data.userid}")
-    String userId;
+
+    @Autowired
+    ObjectMapper objectMapper;
+
+    private final String X_OPENAPI_CLIENTID = "x-openapi-clientid";
+    private String CLIENTID = "aqkxHK2SNxsPci-m5vBJ_EkgG_5XnIaN0ocVfVoEdb4a5922";
+
+
+
 
     @Test
-    void getDashboardUrl() throws Exception {
+    @DisplayName("Test deleteUsers")
+    void testDeleteUsers() throws Exception {
+
+        String userId1 = "1653fbe5-4d70-4595-a3fa-a52249a2b6d3";
+
+        List<String> stringList = new ArrayList<>();
+        stringList.add(userId1);
 
 
-        MvcResult mvcResult = mockMvc.perform(get(DASHBOARDS, userId)
-                .contentType("application/json")).andExpect(status().isOk()).andReturn();
+        String request = objectMapper.writeValueAsString(stringList);
+
+        MvcResult mvcResult = mockMvc
+                .perform(post(DELETE_USER).content(request)
+                        .contentType("application/json")
+                        .header(X_OPENAPI_CLIENTID, CLIENTID))
+                .andExpect(status().isAccepted()).andReturn();
+
+
+        //JSONAssert.assertEquals(mvcResult.getResponse().getContentAsString(), "", JSONCompareMode.NON_EXTENSIBLE);
 
         String actual = mvcResult.getResponse().getContentAsString();
-
-        Dashboard dashboardResponse = gson.fromJson(actual, Dashboard.class);
-        // ASSERT
-        assertNotNull(dashboardResponse);
-        assertNotNull(dashboardResponse.getExpiryInMillis());
-        assertNotNull(dashboardResponse.getUrl());
-
+        assertNotNull(actual);
     }
 
+
     @Test
+    @DisplayName("Test getAggregateCarbonScore")
+    @Order(2)
     void getAggregateCarbonScore() throws Exception {
 
         MvcResult mvcResult = mockMvc.perform(get(AGGREGATE_CARBON_SCORE, userId)
@@ -69,47 +109,103 @@ public class IssuerControllerTest {
 
     }
 
+
+
     @Test
-    void userRegistration() throws Exception {
+    @Order(3)
+    void getDashboardUrl() throws Exception {
 
-        String userProfile = "{\n" +
-                "  \"email\": {\n" +
-                "    \"type\": \"home\",\n" +
-                "    \"value\": \"John.Doe@mail.com\"\n" +
-                "  },\n" +
-                "  \"name\": {\n" +
-                "    \"firstName\": \"John\",\n" +
-                "    \"lastName\": \"Doe\"\n" +
-                "  },\n" +
-                "  \"cardholderName\": \"John Doe\",\n" +
-                "  \"cardNumber\": 5344035171229750,\n" +
-                "  \"cardBaseCurrency\": \"EUR\",\n" +
-                "  \"expiryInfo\": {\n" +
-                "    \"month\": 10,\n" +
-                "    \"year\": 2024\n" +
-                "  },\n" +
-                "  \"billingAddress\": {\n" +
-                "    \"country\": \"USA\",\n" +
-                "    \"locality\": \"Rly Station\",\n" +
-                "    \"postalCode\": 11746,\n" +
-                "    \"region\": \"Huntington\",\n" +
-                "    \"streetAddress\": \"7832 West Elm Street\",\n" +
-                "    \"type\": \"work\"\n" +
-                "  },\n" +
-                "  \"locale\": \"en-US\"\n" +
-                "}";
-
-        MvcResult mvcResult = mockMvc.perform(post(ADD_USER)
-                .contentType("application/json").content(userProfile)).andExpect(status().isOk()).andReturn();
+        MvcResult mvcResult = mockMvc.perform(get(DASHBOARDS, userId)
+                .contentType("application/json")).andExpect(status().isOk()).andReturn();
 
         String actual = mvcResult.getResponse().getContentAsString();
+
+        Dashboard dashboardResponse = gson.fromJson(actual, Dashboard.class);
+        // ASSERT
+        assertNotNull(dashboardResponse);
+        assertNotNull(dashboardResponse.getExpiryInMillis());
+        assertNotNull(dashboardResponse.getUrl());
+
+    }
+
+    public static String getFileAsString(String filePath) throws IOException {
+        ClassPathResource classPathResource = new ClassPathResource(filePath);
+        return new String(readAll(classPathResource.getInputStream()));
+    }
+
+    public static byte[] readAll(InputStream inputStream) throws IOException {
+        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+        int nRead;
+        byte[] data = new byte[1024];
+        while ((nRead = inputStream.read(data, 0, data.length)) != -1) {
+            buffer.write(data, 0, nRead);
+        }
+        buffer.flush();
+        return buffer.toByteArray();
+    }
+
+    @Test
+    @DisplayName("Verify updateServiceProvider() method")
+    void testUpdateServiceProvider() throws Exception {
+
+        IssuerConfiguration issuerConfiguration = new IssuerConfiguration();
+        final String range = "5050,5051";
+        issuerConfiguration.callbackUrl("https://confluence.mastercard.int/pages/viewpage.action?pageId=508046358aMkhe");
+        issuerConfiguration.setSupportedAccountRange(range);
+
+        MvcResult mvcResult = mockMvc.perform(put(UPDATE_USER).contentType("application/json").header(X_OPENAPI_CLIENTID, CLIENTID)
+                .content(new Gson().toJson(issuerConfiguration)))
+                .andExpect(status().isOk()).andReturn();
+
+        assertNotNull(mvcResult.getResponse().getContentAsString());
+
+
+    }
+
+    @Test
+    @DisplayName("Test getIssuerDetails")
+    void getIssuerDetails() throws Exception {
+
+        MvcResult mvcResult = mockMvc.perform(get(GET_ISSUER)
+                .contentType("application/json")).andExpect(status().isOk()).andReturn();
+
+        String actual = mvcResult.getResponse().getContentAsString();
+
+        IssuerProfileDetails dashboardResponse = gson.fromJson(actual, IssuerProfileDetails.class);
+        // ASSERT
+        assertNotNull(dashboardResponse);
+        assertNotNull(dashboardResponse.getCurrencyCode());
+        assertNotNull(dashboardResponse.getCountryCode());
+        assertNotNull(dashboardResponse.getCountryName());
+        assertNotNull(dashboardResponse.getClientId());
+
+    }
+
+    @Test
+    @DisplayName("Test userRegistration")
+    @Order(1)
+    void userRegistration() throws Exception {
+
+        String userRegisterJson = getFileAsString("user-registration-duplicate-user-request.json");
+
+        MvcResult mvcResult = mockMvc.perform(post(ADD_USER)
+                .contentType("application/json").header(X_OPENAPI_CLIENTID, CLIENTID).content(userRegisterJson)).andExpect(status().isOk()).andReturn();
+
+        String actual = mvcResult.getResponse().getContentAsString();
+
+
 
         UserReference userReference = gson.fromJson(actual, UserReference.class);
         // ASSERT
         assertNotNull(userReference);
         assertNotNull(userReference.getUserid());
+//
+        userId=userReference.getUserid();
         assertNotNull(userReference.getCardNumberLastFourDigits());
         assertNotNull(userReference.getStatus());
+
+        assertEquals(200, mvcResult.getResponse().getStatus());
     }
+
 
 }

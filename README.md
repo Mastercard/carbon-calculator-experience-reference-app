@@ -1,4 +1,4 @@
-# Carbon Tracker Reference App
+# Carbon Calculator Experience Reference App
 
 
 ## Table of Contents
@@ -57,12 +57,13 @@ See also:
 - [Securing Sensitive Data Using Payload Encryption](https://developer.mastercard.com/platform/documentation/security-and-authentication/securing-sensitive-data-using-payload-encryption/).
 
 ## Configuration <a name="configuration"></a>
-1. Create your account on [Mastercard Developers](https://developer.mastercard.com/) if you don't have it already.
-2. Create a new project here and add ***Carbon-Tracker*** to it and click continue.
+1. Create your account on [Mastercard Developers](https://sandbox.api.mastercard.com/) if you don't have it already.
+2. Create a new project here and add ***Carbon Calculator Experience*** to it and click continue.
 3. Download Sandbox Signing Key, a ```.p12``` file will be downloaded.
 4. In the Client Encryption Keys section of the dashboard, click on the ```Actions``` dropdown and download the client encryption key, a ``.pem``` file will be downloaded. 
 5. Copy the downloaded ```.p12``` and ```.pem``` files to ```src/main/resources``` folder in your code.
 6. Open ```src/main/resources/application.yml``` and configure:
+    - ```mastercard.api.environment.basepath ```- Path to sandbox endpoint,for example for Sandbox https://sandbox.api.mastercard.com/cts
     - ```mastercard.api.environment.key-file ```- Path to keystore (.p12) file, just change the name as per the downloaded file in step 5. 
     - ```mastercard.api.authentication.consumer-key``` - Copy the Consumer key from "Sandbox/Production Keys" section on your project page
     - ```mastercard.api.authentication.keystore-alias``` - Alias of your key. Default key alias for sandbox is ```keyalias```.
@@ -81,9 +82,21 @@ Use this endpoint to display the current months' carbon score, to provide a snap
 
 3. **Create User** <br/>
 endpoint "/issuers/users" <br/>
-Use this endpoint to enrol their customers onto Priceless Planet Carbon Tracker platform.
+Use this endpoint to enrol their customers onto Carbon Calculator Experience platform.
 
-More details can be found [here](https://stage.developer.mastercard.com/carbon-tracker/documentation/use-cases/).    
+4. **Get Issuer** <br/>
+endpoint "/issuers" <br/>
+Use this endpoint to fetch issuer details onboarded to Carbon Calculator Experience platform. 
+
+5. **Delete User** <br/>
+endpoint "/issuers/user-deletions" </br>
+Use this endpoint to delete user registered to Carbon Calculator Experience platform.
+
+6. **Update Issuer** <br/>
+endpoint "/issuers"<br/>
+Use this endpoint to update issuer details onboarded to Carbon Calculator Experience Platform.
+
+More details can be found [here](https://sandbox.api.mastercard.com/priceless-planet-carbon-tracker/documentation/use-cases/).    
 
 
 ## Execute the Use-Cases   <a name="execute-the-use-cases"></a>
@@ -95,18 +108,22 @@ More details can be found [here](https://stage.developer.mastercard.com/carbon-t
     
     2. Use REST API based Client( such as [Insomnia](https://insomnia.rest/download/core/) or [Postman](https://www.postman.com/downloads/))  
         - Run ```mvn spring-boot:run``` command to run the application.  
-        - Use any REST API based Client to test the functionality. Below are the APIs exposed by this application:  
-                - GET <Host>/carbon-tracker/dashboards <br/>
-                - GET <Host>/carbon-tracker/aggregate-carbon-scores            
+        - Use any REST API based Client to test the functionality. Below are the APIs exposed by this application ,use locahost:8080 as the Host:<br/> 
+                - GET {Host}/cts/issuers/users/{userid}/dashboards <br/>
+                - GET {Host}/cts/issuers/users/{userid}/aggregate-carbon-scores <br/>
+                - GET {HOST}/cts/issuers <br/>
+                - POST {HOST}/cts/issuers/users <br/>
+                - PUT  {HOST}/cts/issuers <br/>
+                - POST  {HOST}/cts/issuers/user-deletions <br/>   
              
                                                                                
 ## Service Documentation <a name="documentation"></a>
 
-Carbon tracker documentation can be found [here](https://stage.developer.mastercard.com/carbon-tracker/documentation/use-cases/).
+Carbon Calculator Experience documentation can be found [here](https://sandbox.api.mastercard.com/priceless-planet-carbon-tracker/documentation/use-cases/).
 
 
 ## API Reference <a name="api-reference"></a>
-The Swagger API specification can be found [here](https://stage.developer.mastercard.com/carbon-tracker/documentation/api-reference/).
+The Swagger API specification can be found [here](https://sandbox.api.mastercard.com/priceless-planet-carbon-tracker/documentation/api-reference/).
 
 ## Support <a name="support"></a>
 Please send an email to **apisupport@mastercard.com** "need to check" with any questions or feedback you may have.

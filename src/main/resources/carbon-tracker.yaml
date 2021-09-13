@@ -28,6 +28,38 @@ tags:
 
 
 paths:
+  /issuers:
+    put:
+      tags:
+        - Issuer
+      summary: Allows issuer to update their nformation onto Carbon Calculator Expereince Service.
+      description: Allows a registered issuer to update their configuration onto Carbon Calculator Expereince Service.
+      operationId: updateIssuer
+      requestBody:
+        $ref: '#/components/requestBodies/IssuerConfiguration'
+      responses:
+        "200":
+          $ref: '#/components/responses/IssuerProfile'
+        "400":
+          $ref: '#/components/responses/UpdateIssuerBadRequestError'
+        "401":
+          $ref: '#/components/responses/UpdateIssuerUnauthorisedError'
+        "404":
+          $ref: '#/components/responses/IssuerNotFoundError'
+        "415":
+          $ref: '#/components/responses/UnsupportedMediaTypeError'
+
+    get:
+      tags:
+        - Issuer
+      summary: Used to get the issuer details.
+      description: Allows to get issuer details onboarded on Carbon Calculator Experience.
+      operationId: getIssuer
+      responses:
+        "200":
+          $ref: '#/components/responses/IssuerProfileDetails'
+        "404":
+          $ref: '#/components/responses/IssuerNotFoundError'
   /issuers/users:
     post:
       tags:
@@ -43,6 +75,12 @@ paths:
           $ref: '#/components/responses/UserReference'
         "400":
           $ref: '#/components/responses/UserEnrolmentBadRequestError'
+        "401":
+          $ref: '#/components/responses/UserEnrolmentUnauthorisedError'
+        "404":
+          $ref: '#/components/responses/IssuerNotFoundError'
+        "415":
+          $ref: '#/components/responses/UnsupportedMediaTypeError'
 
   /issuers/users/{userid}/dashboards:
     get:
@@ -77,6 +115,29 @@ paths:
           $ref: '#/components/responses/BadRequestError'
         "404":
           $ref: '#/components/responses/UserNotFoundError'
+
+  /issuers/user-deletions:
+    post:
+      tags:
+        - Issuer
+      summary: Delete one or more users
+      description: Allows a registered Service Provider to delete one or more users. Payment cards associated user will also be deleted.
+        On successful response from server, a Service Provider should remove all the requested users and associated payment cards from its system.
+
+      operationId: deleteUsers
+      requestBody:
+        $ref: '#/components/requestBodies/UserIDs'
+      responses:
+        "202":
+          $ref: '#/components/responses/UserIDs'
+        "400":
+          $ref: '#/components/responses/DeleteUserBadRequestError'
+        "401":
+          $ref: '#/components/responses/DeleteUserUnauthorisedError'
+        "404":
+          $ref: '#/components/responses/DeleteUserNotFoundError'
+        "415":
+          $ref: '#/components/responses/UnsupportedMediaTypeError'
 components:
   requestBodies:
     UserProfile:
@@ -86,6 +147,27 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/UserProfile'
+    IssuerConfiguration:
+      description: Configuration details for issuer which needs to be update. It should contain only those parameters which you want to update.
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/IssuerConfiguration'
+    UserIDs:
+      description: List of user ids
+      required: true
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/UserID'
+            minItems: 1
+            maxItems: 500
+          examples:
+            UserIDs:
+              $ref: '#/components/examples/UserIDs'
   schemas:
     UserProfile:
       title: UserProfile
@@ -125,6 +207,107 @@ components:
           minLength: 1
           maxLength: 100
           example: en-US
+    CountryName:
+      type: string
+      description: ISO 3166 country short name
+      pattern: ^[a-zA-Z\s\\(\\),\\.]+$
+      minLength: 3
+      maxLength: 50
+      example: Brazil
+    IssuerProfileDetails:
+      title: IssuerProfileDetails
+      type: object
+      description: Information about an issuer as available on the server.
+      required:
+        - clientId
+        - issuerName
+        - supportedAccountRange
+        - callbackUrl
+        - status
+        - email
+        - currencyCode
+        - countryCode
+        - countryName
+        - termsAndConditionURL
+        - privacyNoticeURL
+        - optOutURL
+      properties:
+        clientId:
+          type: string
+          minLength: 1
+          maxLength: 200
+          pattern: ^[\w\d\-\_]{1,200}
+          description: Unique issuer identifier from the Mastercard Developer Portal.
+          example: 'fjl2fxzsYl1OpvxkBItC9nVw1PSQc_b-eQMcmQFg011ab4b5'
+        customerId:
+          type: string
+          minLength: 1
+          maxLength: 200
+          pattern: ^[\w\d]{1,200}
+          description: Unique issuer identifier assigned by Mastercard which remains same across all Mastercard systems.
+          example: 'customerid1'
+        supportedAccountRange:
+          type: string
+          pattern: ^[0-9]{4,8}(,[0-9]{4,8})*$
+          description: Comma separated account range must be between 4 and 8 supported by an issuer.
+          example: '534403, 518145, 518152, 5403, 5424'
+        callbackUrl:
+          type: string
+          minLength: 0
+          maxLength: 2083
+          description: A service URL which has been made available by an issuer so that it can receive latest transaction score information from server.
+          example: ''
+        status:
+          type: string
+          minLength: 6
+          maxLength: 9
+          description: Status of an issuer on the server. Possible values are ACTIVE & SUSPENDED.
+          example: 'ACTIVE'
+        email:
+          type: string
+          minLength: 1
+          maxLength: 10
+          description: Issuers email address
+          example: 'xyz@abc.com'
+        currencyCode:
+          $ref: '#/components/schemas/CurrencyCode'
+        countryCode:
+          title: countryCode
+          type: string
+          description: DE 19 (Acquiring Institution Country Code) is the code of the country where the acquiring institution is located.
+          maxLength: 3
+          minLength: 3
+          example: USA
+        countryName:
+          $ref: '#/components/schemas/CountryName'
+        privacyNoticeURL:
+          type: string
+          example: "https://www.issuer.privacy-policy-url.html"
+          description: Privacy notice url.
+        termsAndConditionURL:
+          type: string
+          example: "https://www.issuer.term-and-conditions.html"
+          description: Terms and condition urk for the given user.
+        optOutURL:
+          type: string
+          example: "https://www.issuer.opt-out-url.html"
+          description: Opt out url for the given user.
+    IssuerConfiguration:
+      title: IssuerConfiguration
+      type: object
+      description: Configuration details for an Issuer.
+      properties:
+        supportedAccountRange:
+          type: string
+          pattern: ^[0-9]{4,8}(,[0-9]{4,8})*$
+          description: Comma separated account range must be between 4 and 8 supported by an issuer.
+          example: '534403, 518145, 518152, 5403, 5424'
+        callbackUrl:
+          type: string
+          minLength: 0
+          maxLength: 2083
+          description: A service URL that can receive transaction score information from Mastercard in near real-time.
+          example: 'https://www.abcbank.com/payment-cards/notify-transaction-footprints'
     CurrencyCode:
       title: currencyCode
       type: string
@@ -234,6 +417,49 @@ components:
           maxLength: 100
           example: Doe
       title: Username
+
+    IssuerProfile:
+      title: IssuerProfile
+      type: object
+      description: Information about an issuer as available on the server.
+      required:
+        - clientId
+        - issuerName
+        - supportedAccountRange
+        - callbackUrl
+        - status
+      properties:
+        clientId:
+          type: string
+          minLength: 1
+          maxLength: 200
+          pattern: ^[\w\d\-\_]{1,200}
+          description: Unique issuer identifier from the Mastercard Developer Portal.
+          example: 'fjl2fxzsYl1OpvxkBItC9nVw1PSQc_b-eQMcmQFg011ab4b5'
+        customerId:
+          type: string
+          minLength: 1
+          maxLength: 200
+          pattern: ^[\w\d]{1,200}
+          description: Unique issuer identifier assigned by Mastercard which remains same across all Mastercard systems.
+          example: 'customerid1'
+        supportedAccountRange:
+          type: string
+          pattern: ^[0-9]{4,8}(,[0-9]{4,8})*$
+          description: Comma separated account range must be between 4 and 8 supported by an issuer.
+          example: '534403, 518145, 518152, 5403, 5424'
+        callbackUrl:
+          type: string
+          minLength: 0
+          maxLength: 2083
+          description: A service URL which has been made available by an issuer so that it can receive latest transaction score information from server.
+          example: ''
+        status:
+          type: string
+          minLength: 6
+          maxLength: 9
+          description: Status of an issuer on the server. Possible values are ACTIVE & SUSPENDED.
+          example: 'ACTIVE'
     UserReference:
       title: UserReference
       type: object
@@ -241,14 +467,12 @@ components:
       required:
         - cardNumberLastFourDigits
         - status
-        - userPPCTId
+        - userid
       properties:
         userid:
           $ref: '#/components/schemas/UserID'
         cardNumberLastFourDigits:
           type: string
-          minLength: 4
-          maxLength: 4
           pattern: '^\d{4}$'
           description: Last 4 digits of a full payment card number which was provided as enrolment request.
           example: 4363
@@ -256,14 +480,12 @@ components:
           type: string
           minLength: 6
           maxLength: 7
-          description: Status of a Payment Card on Priceless Planet Carbon Tracker platform. Possible values are ACTIVE &amp; DELETED.
+          description: Status of a Payment Card on Carbon Calculator Expereince Service. Possible values are ACTIVE &amp; DELETED.
           example: ACTIVE
     UserID:
       type: string
-      minLength: 36
-      maxLength: 36
       pattern: '^[0-9A-Fa-f-]{36}'
-      description: Unique identifier for a user enrolled into Priceless Planet Carbon Tracker platform.
+      description: Unique identifier for a user enrolled into Carbon Calculator Expereince Service.
       example: f5d88571-ac15-465a-a0d8-1ad1327b9a06
 
     Dashboard:
@@ -364,6 +586,7 @@ components:
       example: f5d88571-ac15-465a-a0d8-1ad1327b9a06
       schema:
         $ref: '#/components/schemas/UserID'
+
   responses:
     Dashboard:
       description: The response object contains Short-Live URL along with authentication token.
@@ -371,6 +594,46 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/Dashboard'
+    IssuerProfileDetails:
+      description: 'The response object that contains latest information of an issuer as available on server.'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/IssuerProfileDetails'
+          examples:
+            IssuerDetails:
+              $ref: '#/components/examples/IssuerDetails'
+    IssuerNotFoundError:
+      description: This response code is returned when server cannot find the account which has been used to call this API.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorWrapper'
+          examples:
+            IssuerNotFoundError:
+              $ref: '#/components/examples/IssuerNotFoundError'
+    IssuerProfile:
+      description: 'The response object that contains latest information of an issuer as available on server.'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/IssuerProfile'
+          examples:
+            IssuerWithCallbackUrl:
+              $ref: '#/components/examples/IssuerWithCallbackUrl'
+            IssuerWithoutCallbackUrl:
+              $ref: '#/components/examples/IssuerWithoutCallbackUrl'
+    UserIDs:
+      description: The response object contains list user ids
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/UserID'
+          examples:
+            DeletedUserIDs:
+              $ref: '#/components/examples/UserIDs'
     UserReference:
       description: The response object that contains Payment Card information after successful registration.
       content:
@@ -408,6 +671,16 @@ components:
           examples:
             BadRequestError:
               $ref: '#/components/examples/BadRequestError'
+    UpdateIssuerUnauthorisedError:
+      description: This response code is returned for unauthorized isuuer.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorWrapper'
+          examples:
+            IssuerInactiveError:
+              $ref: '#/components/examples/IssuerInactiveError'
+
     UserNotFoundError:
       description: This response code is returned when a user not found or been removed
       content:
@@ -417,12 +690,98 @@ components:
               $ref: '#/components/examples/UserNotFoundError'
           schema:
             $ref: '#/components/schemas/ErrorWrapper'
+    DeleteUserBadRequestError:
+      description: This response code is returned when a request is invalid or data in the request is not valid.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorWrapper'
+          examples:
+            UserCountError:
+              $ref: '#/components/examples/UserCountError'
+    DeleteUserUnauthorisedError:
+      description: This response code is returned when a user terminated or in active.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorWrapper'
+          examples:
+            IssuerInactiveError:
+              $ref: '#/components/examples/IssuerInactiveError'
+    DeleteUserNotFoundError:
+      description: This response code is returned when a user or issuer is not present.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorWrapper'
+          examples:
+            IssuerNotFoundError:
+              $ref: '#/components/examples/IssuerNotFoundError'
+    UnsupportedMediaTypeError:
+      description: This response code is returned when the MediaType in request is other than application/json.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorWrapper'
+          examples:
+            UnsupportedMediaTypeError:
+              $ref: '#/components/examples/UnsupportedMediaTypeError'
+    UserEnrolmentUnauthorisedError:
+      description: This response code is returned for unauthorized isuuer.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorWrapper'
+          examples:
+            IssuerInactiveError:
+              $ref: '#/components/examples/IssuerInactiveError'
+    UpdateIssuerBadRequestError:
+      description: This response code is returned when either a request is invalid or data provided in the request is in invalid format.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorWrapper'
+          examples:
+            IssuerInvalidAccountRangeError:
+              $ref: '#/components/examples/IssuerInvalidAccountRangeError'
+            IssuerInvalidAccountRangeLengthError:
+              $ref: '#/components/examples/IssuerInvalidAccountRangeLengthError'
 
   examples:
     AggregateCarbonScore:
       value:
         carbonEmissionInGrams: 32.45
         aggregateDate: november-2020
+    IssuerDetails:
+      value:
+        clientId: 'fjl2fxzsYl1OpvxkBItC9nVw1PSQc_b-eQMcmQFg011ab4b5'
+        customerId: ''
+        issuerName: 'ABC Bank'
+        supportedAccountRange: '534403, 518145, 518152, 5403, 5424'
+        callbackUrl: 'https://www.abcbank.com/payment-cards/notify-transaction-footprints'
+        status: 'ACTIVE'
+        email: 'xyz@abc.com'
+        currencyCode: 'USD'
+        countryCode: 'USA'
+        termsAndConditionURL: 'https://www.issuer.term-and-conditions.html'
+        privacyNoticeURL: 'https://www.issuer.privacy-policy-url.html'
+        optOutURL: 'https://www.issuer.opt-out-url.html'
+    IssuerWithoutCallbackUrl:
+      value:
+        clientId: 'fjl2fxzsYl1OpvxkBItC9nVw1PSQc_b-eQMcmQFg011ab4b5'
+        customerId: ''
+        issuerName: 'ABC Bank'
+        supportedAccountRange: '534403, 518145, 518152, 5403, 5424'
+        callbackUrl: ''
+        status: 'ACTIVE'
+    IssuerWithCallbackUrl:
+      value:
+        clientId: 'fjl2fxzsYl1OpvxkBItC9nVw1PSQc_b-eQMcmQFg011ab4b5'
+        customerId: ''
+        issuerName: 'ABC Bank'
+        supportedAccountRange: '534403, 518145, 518152, 5403, 5424'
+        callbackUrl: 'https://www.abcbank.com/payment-cards/notify-transaction-footprints'
+        status: 'ACTIVE'
 
     UserNotFoundError:
       value:
@@ -451,3 +810,62 @@ components:
               Description: 'One of the request parameters is invalid, try again with correct request.'
               Recoverable: false
               Details: 'email must not be null'
+    UserCountError:
+      value:
+        Errors:
+          Error:
+            - Source: 'CARBON CALCULATOR EXPERIENCE'
+              ReasonCode: 'INVALID_REQUEST_PARAMETER'
+              Description: 'One of the request parameters is invalid, try again with correct request.'
+              Recoverable: true
+              Details: 'Request body should have at least 1 or not more than 500 userIds'
+    IssuerInactiveError:
+      value:
+        Errors:
+          Error:
+            - Source: 'CARBON CALCULATOR EXPERIENCE'
+              ReasonCode: 'ACCOUNT_INACTIVE'
+              Description: "Your account is inactive, kindly contact your Mastercard associate to activate it. Until then you won't be able to access any service."
+              Recoverable: false
+              Details: "Your account is inactive, kindly contact your Mastercard associate to activate it. Until then you won't be able to access any service."
+    IssuerNotFoundError:
+      value:
+        Errors:
+          Error:
+            - Source: 'CARBON CALCULATOR EXPERIENCE'
+              ReasonCode: 'ACCOUNT_NOT_FOUND'
+              Description: 'Account Id is not Identified'
+              Recoverable: false
+              Details: 'We cannot find the account which you are using to access this service. Kindly register your account or contact your Mastercard associate if you have already registered with us earlier.'
+
+    UnsupportedMediaTypeError:
+      value:
+        Errors:
+          Error:
+            - Source: 'CARBON CALCULATOR EXPERIENCE'
+              ReasonCode: 'UNSUPPORTED_MEDIA_TYPE'
+              Description: 'Requested media type is not supported, try again with supported media type.'
+              Recoverable: false
+              Details: ''
+    IssuerInvalidAccountRangeError:
+      value:
+        Errors:
+          Error:
+            - Source: 'Carbon-Calculator'
+              ReasonCode: 'SERVICE_PROVIDER_ACCOUNT_RANGES_ALREADY_EXIST'
+              Description: 'Service Provider with supported account range [1234] already exists.'
+              Recoverable: false
+              Details: ''
+    IssuerInvalidAccountRangeLengthError:
+      value:
+        Errors:
+          Error:
+            - Source: 'CARBON CALCULATOR EXPERIENCE'
+              ReasonCode: 'INVALID_REQUEST_PARAMETER'
+              Description: 'One of the request parameters is invalid, try again with correct request.'
+              Recoverable: false
+              Details: 'Each value in supportedAccountRange must be numeric and size should be between 4 and 8'
+
+    UserIDs:
+      value: [ "4ba581a55-bcea-4c3e-8e0f-9b4726e5e6d3",
+               "c5d88571-ac15-465a-a0d8-1ad1327b9a06" ]

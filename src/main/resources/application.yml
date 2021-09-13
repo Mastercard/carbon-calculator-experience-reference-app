@@ -1,7 +1,7 @@
 mastercard:
   api:
     environment:
-      base-path: # Refers to sandbox endpoint
+      base-path: https://sandbox.api.mastercard.com/cts # Refers to sandbox endpoint
     authentication:
       key-file: # Copy .p12 file in src/main/resources and set value as classpath:nameOfYourP12File.p12
       consumer-key:  # Copy the Consumer key from "Sandbox/Production Keys" section on your project page
@@ -11,6 +11,4 @@ mastercard:
       key-file:  #client-encryption.pem
       fingerprint:  #fingerprint
 
-test:
-  data:
-    userid: 2cc27170-3bb2-4ef4-9221-2015bf5e640d  # Update with your user id
+
