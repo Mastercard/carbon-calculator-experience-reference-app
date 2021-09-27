@@ -31,17 +31,17 @@ import static com.mastercard.developers.carbontracker.util.JSON.deserializeError
 @Service
 public class IssuerServiceImpl implements IssuerService {
 
-    private IssuerApi issuerApi;
-    private IssuerApi issuerApiforUpdate;
+    private IssuerApi issuerApiForEncryptedPayload;
+    private IssuerApi issuerApiForNonEncryptedPayload;
 
     @Autowired
     public IssuerServiceImpl(ApiConfiguration apiConfiguration) throws ServiceException {
         log.info("Initializing Issuer Service");
-        issuerApi = new IssuerApi(setup(apiConfiguration));
-        issuerApiforUpdate = new IssuerApi(setupForUpdateUser(apiConfiguration));
+        issuerApiForEncryptedPayload = new IssuerApi(setupForEncryptedPayload(apiConfiguration));
+        issuerApiForNonEncryptedPayload = new IssuerApi(setupForNonEncryptedPayload(apiConfiguration));
     }
 
-     private ApiClient setup(ApiConfiguration apiConfiguration) throws ServiceException {
+     private ApiClient setupForEncryptedPayload(ApiConfiguration apiConfiguration) throws ServiceException {
         OkHttpClient client = new OkHttpClient().newBuilder().
                 addInterceptor(
                 new OkHttpFieldLevelEncryptionInterceptor(
@@ -55,7 +55,7 @@ public class IssuerServiceImpl implements IssuerService {
         return new ApiClient().setHttpClient(client).setBasePath(apiConfiguration.getBasePath());
     }
 
-    private ApiClient setupForUpdateUser(ApiConfiguration apiConfiguration) throws ServiceException {
+    private ApiClient setupForNonEncryptedPayload(ApiConfiguration apiConfiguration) {
         OkHttpClient client = new OkHttpClient().newBuilder().
 
         addInterceptor(
@@ -70,7 +70,7 @@ public class IssuerServiceImpl implements IssuerService {
     public Dashboard getAuthToken(String userPpctId) throws ServiceException {
         Dashboard dashboard;
         try {
-            dashboard = issuerApi.getAuthToken(userPpctId);
+            dashboard = issuerApiForNonEncryptedPayload.getAuthToken(userPpctId);
         } catch (ApiException e) {
             throw new ServiceException(e.getMessage(), deserializeErrors(e.getResponseBody()));
         }
@@ -82,7 +82,7 @@ public class IssuerServiceImpl implements IssuerService {
 
         AggregateCarbonScore aggregateCarbonScore;
         try {
-            aggregateCarbonScore = issuerApi.getAggregateCarbonScore(userPpctId);
+            aggregateCarbonScore = issuerApiForNonEncryptedPayload.getAggregateCarbonScore(userPpctId);
         } catch (ApiException e) {
             throw new ServiceException(e.getMessage(), deserializeErrors(e.getResponseBody()));
         }
@@ -94,7 +94,7 @@ public class IssuerServiceImpl implements IssuerService {
     public UserReference userRegistration(UserProfile userProfile) throws ServiceException {
         UserReference userReference;
         try {
-            userReference = issuerApi.userRegistration(userProfile);
+            userReference = issuerApiForEncryptedPayload.userRegistration(userProfile);
         } catch (ApiException e) {
             throw new ServiceException(e.getMessage(), deserializeErrors(e.getResponseBody()));
         }
@@ -106,7 +106,7 @@ public class IssuerServiceImpl implements IssuerService {
     public ResponseEntity<List<String>> deleteUsers(List<String> requestBody) throws ServiceException {
         List<String> deletedUsers;
         try {
-            deletedUsers = issuerApiforUpdate.deleteUsers(requestBody);
+            deletedUsers = issuerApiForNonEncryptedPayload.deleteUsers(requestBody);
 
         } catch (ApiException e) {
             throw new ServiceException(e.getMessage(), deserializeErrors(e.getResponseBody()));
@@ -119,7 +119,7 @@ public class IssuerServiceImpl implements IssuerService {
     public IssuerProfile updateIssuer(IssuerConfiguration issuerConfiguration) throws ServiceException {
             IssuerProfile profile ;
             try {
-                profile = issuerApiforUpdate.updateIssuer(issuerConfiguration);
+                profile = issuerApiForNonEncryptedPayload.updateIssuer(issuerConfiguration);
 
             } catch (ApiException e) {
                 throw new ServiceException(e.getMessage(), deserializeErrors(e.getResponseBody()));
@@ -132,7 +132,7 @@ public class IssuerServiceImpl implements IssuerService {
 
         IssuerProfileDetails issuerProfileDetails;
         try {
-            issuerProfileDetails = issuerApiforUpdate.getIssuer();
+            issuerProfileDetails = issuerApiForNonEncryptedPayload.getIssuer();
         } catch (ApiException e) {
             throw new ServiceException(e.getMessage(), deserializeErrors(e.getResponseBody()));
         }
