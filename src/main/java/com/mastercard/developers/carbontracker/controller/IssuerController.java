@@ -3,6 +3,8 @@ package com.mastercard.developers.carbontracker.controller;
 import com.mastercard.developers.carbontracker.exception.ServiceException;
 import com.mastercard.developers.carbontracker.service.IssuerService;
 import io.swagger.annotations.ApiParam;
+import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.openapitools.client.model.AggregateCarbonScore;
 import org.openapitools.client.model.Dashboard;
 import org.openapitools.client.model.IssuerConfiguration;
@@ -13,6 +15,7 @@ import org.openapitools.client.model.UserReference;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -33,6 +36,9 @@ import static com.mastercard.developers.carbontracker.util.ServiceEndpoints.GET_
 import static com.mastercard.developers.carbontracker.util.ServiceEndpoints.UPDATE_USER;
 
 @RestController
+@AllArgsConstructor
+@Slf4j
+@Validated
 public class IssuerController {
 
     @Autowired
