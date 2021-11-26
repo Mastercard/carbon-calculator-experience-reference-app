@@ -3,7 +3,6 @@ package com.mastercard.developers.carbontracker.controller;
 import com.mastercard.developers.carbontracker.exception.ServiceException;
 import com.mastercard.developers.carbontracker.service.IssuerService;
 import io.swagger.annotations.ApiParam;
-import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.openapitools.client.model.AggregateCarbonScore;
 import org.openapitools.client.model.Dashboard;
@@ -36,46 +35,51 @@ import static com.mastercard.developers.carbontracker.util.ServiceEndpoints.GET_
 import static com.mastercard.developers.carbontracker.util.ServiceEndpoints.UPDATE_USER;
 
 @RestController
-@AllArgsConstructor
 @Slf4j
 @Validated
 public class IssuerController {
 
-    @Autowired
-    IssuerService issuerService;
 
-    @GetMapping(DASHBOARDS)
-    public ResponseEntity<Dashboard> getAuthToken(@Pattern(regexp = "^[0-9A-Fa-f-]{36}") @Size(min = 36, max = 36) @ApiParam(value = "Unique identifier for a cardholder enrolled into Priceless Planet Carbon Tracker Service.", required = true) @PathVariable("userid") String userId) throws ServiceException {
-        return ResponseEntity.ok(issuerService.getAuthToken(userId));
-    }
+  private IssuerService issuerService;
+
+  @Autowired
+  public IssuerController(IssuerService issuerService) {
+    this.issuerService = issuerService;
+  }
+
+  @GetMapping(DASHBOARDS)
+  public ResponseEntity<Dashboard> getAuthToken(@Pattern(regexp = "^[0-9A-Fa-f-]{36}") @Size(min = 36, max = 36) @ApiParam(value = "Unique identifier for a cardholder enrolled into Priceless Planet Carbon Tracker Service.", required = true) @PathVariable("userid") String userId) throws ServiceException {
+    return ResponseEntity.ok(issuerService.getAuthToken(userId));
+  }
 
 
-    @GetMapping(AGGREGATE_CARBON_SCORE)
-    public ResponseEntity<AggregateCarbonScore> getAggregateCarbonScore(@Pattern(regexp = "^[0-9A-Fa-f-]{36}") @Size(min = 36, max = 36) @ApiParam(value = "Unique identifier for a cardholder enrolled into Priceless Planet Carbon Tracker Service.", required = true) @PathVariable("userid") String userId) throws ServiceException {
-        return ResponseEntity.ok(issuerService.getAggregateCarbonScore(userId));
-    }
+  @GetMapping(AGGREGATE_CARBON_SCORE)
+  public ResponseEntity<AggregateCarbonScore> getAggregateCarbonScore(@Pattern(regexp = "^[0-9A-Fa-f-]{36}") @Size(min = 36, max = 36) @ApiParam(value = "Unique identifier for a cardholder enrolled into Priceless Planet Carbon Tracker Service.", required = true) @PathVariable("userid") String userId) throws ServiceException {
+    return ResponseEntity.ok(issuerService.getAggregateCarbonScore(userId));
+  }
 
 
-    @PostMapping(ADD_USER)
-    public ResponseEntity<UserReference> userRegistration(@ApiParam(value = "User's Personal and Card information which needs to be registered onto Priceless Planet Carbon Tracker platform. This endpoint uses Mastercard payload encryption. Please refer to the **[Payload Encryption](https://mstr.cd/2UPfda0)** page for implementation details.", required = true) @Valid @RequestBody UserProfile userProfile) throws ServiceException {
-        return ResponseEntity.ok(issuerService.userRegistration(userProfile));
-    }
-   @PutMapping(UPDATE_USER)
-    public ResponseEntity<IssuerProfile> updateIssuer(@ApiParam(value = " issuer configuration", required = true) @Valid @RequestBody IssuerConfiguration issuerConfiguration) throws ServiceException {
+  @PostMapping(ADD_USER)
+  public ResponseEntity<UserReference> userRegistration(@ApiParam(value = "User's Personal and Card information which needs to be registered onto Priceless Planet Carbon Tracker platform. This endpoint uses Mastercard payload encryption. Please refer to the **[Payload Encryption](https://mstr.cd/2UPfda0)** page for implementation details.", required = true) @Valid @RequestBody UserProfile userProfile) throws ServiceException {
+    return ResponseEntity.ok(issuerService.userRegistration(userProfile));
+  }
 
-        IssuerProfile issuerProfile = issuerService.updateIssuer(issuerConfiguration);
-        return ResponseEntity.ok(issuerProfile);
-    }
+  @PutMapping(UPDATE_USER)
+  public ResponseEntity<IssuerProfile> updateIssuer(@ApiParam(value = " issuer configuration", required = true) @Valid @RequestBody IssuerConfiguration issuerConfiguration) throws ServiceException {
 
-    @PostMapping(DELETE_USER)
-    public ResponseEntity<List<String>> deleteUsers(@ApiParam(value = " User ids", required = true)@Valid @RequestBody List<String> userIds) throws ServiceException {
-        return issuerService.deleteUsers(userIds);
-    }
+    IssuerProfile issuerProfile = issuerService.updateIssuer(issuerConfiguration);
+    return ResponseEntity.ok(issuerProfile);
+  }
 
-    @GetMapping(GET_ISSUER)
-    public ResponseEntity<IssuerProfileDetails> getIssuer() throws ServiceException {
-        IssuerProfileDetails issuerProfileDetails = issuerService.getIssuer();
-        return new ResponseEntity<>(issuerProfileDetails, HttpStatus.OK);
-    }
+  @PostMapping(DELETE_USER)
+  public ResponseEntity<List<String>> deleteUsers(@ApiParam(value = " User ids", required = true) @Valid @RequestBody List<String> userIds) throws ServiceException {
+    return issuerService.deleteUsers(userIds);
+  }
+
+  @GetMapping(GET_ISSUER)
+  public ResponseEntity<IssuerProfileDetails> getIssuer() throws ServiceException {
+    IssuerProfileDetails issuerProfileDetails = issuerService.getIssuer();
+    return new ResponseEntity<>(issuerProfileDetails, HttpStatus.OK);
+  }
 
 }

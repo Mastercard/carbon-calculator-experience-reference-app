@@ -32,64 +32,64 @@ import java.security.PrivateKey;
 @Configuration
 public class ApiConfiguration {
 
-    @Value("${mastercard.api.authentication.consumer-key}")
-    private String consumerKey;
+  @Value("${mastercard.api.authentication.consumer-key}")
+  private String consumerKey;
 
-    @Value("${mastercard.api.authentication.keystore-alias}")
-    private String keyAlias;
+  @Value("${mastercard.api.authentication.keystore-alias}")
+  private String keyAlias;
 
-    @Value("${mastercard.api.authentication.keystore-password}")
-    private String keyPassword;
+  @Value("${mastercard.api.authentication.keystore-password}")
+  private String keyPassword;
 
-    @Value("${mastercard.api.authentication.key-file}")
-    private Resource p12File;
+  @Value("${mastercard.api.authentication.key-file}")
+  private Resource p12File;
 
-    @Value("${mastercard.api.environment.base-path}")
-    private String basePath;
+  @Value("${mastercard.api.environment.base-path}")
+  private String basePath;
 
-    @Value("${mastercard.api.encryption.key-file}")
-    private Resource encryptionKeyFile;
+  @Value("${mastercard.api.encryption.key-file}")
+  private Resource encryptionKeyFile;
 
-    @Value("${mastercard.api.encryption.fingerprint}")
-    private String encryptionFingerprint;
+  @Value("${mastercard.api.encryption.fingerprint}")
+  private String encryptionFingerprint;
 
-    public String getConsumerKey() {
-        return consumerKey;
+  public String getConsumerKey() {
+    return consumerKey;
+  }
+
+  public String getBasePath() {
+    return basePath;
+  }
+
+  public Resource getEncryptionKeyFile() {
+    return encryptionKeyFile;
+  }
+
+  @Bean
+  public ApiClient setupApiClient() {
+    ApiClient apiClient = new ApiClient();
+
+    apiClient.setBasePath(basePath);
+    apiClient.setHttpClient(
+      apiClient.getHttpClient()
+        .newBuilder()
+        .addInterceptor(new OkHttpOAuth1Interceptor(consumerKey, getSigningKey()))
+        .build()
+    );
+    apiClient.setDebugging(false);
+
+    return apiClient;
+  }
+
+  public PrivateKey getSigningKey() {
+    try {
+      return AuthenticationUtils.loadSigningKey(
+        p12File.getFile().getAbsolutePath(),
+        keyAlias,
+        keyPassword);
+    } catch (Exception e) {
+      throw new IllegalArgumentException(e);
     }
-
-    public String getBasePath() {
-        return basePath;
-    }
-
-    public Resource getEncryptionKeyFile() {
-        return encryptionKeyFile;
-    }
-
-    @Bean
-    public ApiClient setupApiClient() {
-        ApiClient apiClient = new ApiClient();
-
-        apiClient.setBasePath(basePath);
-        apiClient.setHttpClient(
-                apiClient.getHttpClient()
-                        .newBuilder()
-                        .addInterceptor(new OkHttpOAuth1Interceptor(consumerKey, getSigningKey()))
-                        .build()
-        );
-        apiClient.setDebugging(false);
-
-        return apiClient;
-    }
-
-    public PrivateKey getSigningKey() {
-        try {
-            return AuthenticationUtils.loadSigningKey(
-                    p12File.getFile().getAbsolutePath(),
-                    keyAlias,
-                    keyPassword);
-        } catch (Exception e) {
-            throw new IllegalArgumentException(e);
-        }
-    }
+  }
 
 }

@@ -19,9 +19,7 @@ import org.openapitools.client.model.IssuerProfile;
 import org.openapitools.client.model.IssuerProfileDetails;
 import org.openapitools.client.model.UserProfile;
 import org.openapitools.client.model.UserReference;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
@@ -39,16 +37,12 @@ import static com.mastercard.developers.carbontracker.util.ServiceEndpoints.GET_
 import static com.mastercard.developers.carbontracker.util.ServiceEndpoints.UPDATE_USER;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.when;
-import static org.springframework.http.RequestEntity.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-
 public class IssuerControllerMockTest {
   @Mock
   private IssuerService issuerService;
@@ -61,7 +55,7 @@ public class IssuerControllerMockTest {
   ObjectMapper objectMapper;
 
 
-  private static Gson gson =
+  private static final Gson gson =
     new GsonBuilder()
       .disableHtmlEscaping()
       .create();
@@ -73,7 +67,7 @@ public class IssuerControllerMockTest {
   @BeforeAll
   void setUp() {
     MockitoAnnotations.initMocks(this);
-   objectMapper=new ObjectMapper();
+    objectMapper = new ObjectMapper();
     mockMvc = MockMvcBuilders.standaloneSetup(issuerController).build();
   }
 
@@ -119,7 +113,7 @@ public class IssuerControllerMockTest {
   @Test
   @DisplayName("Add User")
   void testAddUser() throws Exception {
-    UserProfile userProfile=new UserProfile();
+    UserProfile userProfile = new UserProfile();
     userProfile.setEmail(new Email());
     when(issuerService.userRegistration(any())).thenReturn(new UserReference());
     MvcResult mvcResult = mockMvc.perform(MockMvcRequestBuilders.post(ADD_USER)
@@ -153,7 +147,7 @@ public class IssuerControllerMockTest {
   @Test
   @DisplayName("Test getIssuerDetails")
   void getIssuerDetails() throws Exception {
-    IssuerProfileDetails issuerProfileDetails=new IssuerProfileDetails();
+    IssuerProfileDetails issuerProfileDetails = new IssuerProfileDetails();
     issuerProfileDetails.setCallbackUrl("http://callbakcUrl");
     issuerProfileDetails.setClientId("clientId");
     issuerProfileDetails.setCurrencyCode("USD");
@@ -184,7 +178,7 @@ public class IssuerControllerMockTest {
 
 
     String request = objectMapper.writeValueAsString(stringList);
-    ResponseEntity<List<String>> res=new ResponseEntity<List<String>>(HttpStatus.ACCEPTED);
+    ResponseEntity<List<String>> res = new ResponseEntity<List<String>>(HttpStatus.ACCEPTED);
     when(issuerService.deleteUsers(any())).thenReturn(res);
 
     MvcResult mvcResult = mockMvc

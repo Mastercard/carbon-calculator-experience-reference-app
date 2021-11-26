@@ -31,112 +31,124 @@ import static com.mastercard.developers.carbontracker.util.JSON.deserializeError
 @Service
 public class IssuerServiceImpl implements IssuerService {
 
-    private IssuerApi issuerApiForEncryptedPayload;
-    private IssuerApi issuerApiForNonEncryptedPayload;
+  private IssuerApi issuerApiForEncryptedPayload;
+  private IssuerApi issuerApiForNonEncryptedPayload;
 
-    @Autowired
-    public IssuerServiceImpl(ApiConfiguration apiConfiguration) throws ServiceException {
-        log.info("Initializing Issuer Service");
-        issuerApiForEncryptedPayload = new IssuerApi(setupForEncryptedPayload(apiConfiguration));
-        issuerApiForNonEncryptedPayload = new IssuerApi(setupForNonEncryptedPayload(apiConfiguration));
-    }
+  @Autowired
+  public IssuerServiceImpl(ApiConfiguration apiConfiguration) throws ServiceException {
+    log.info("Initializing Issuer Service");
+    issuerApiForEncryptedPayload = new IssuerApi(setupForEncryptedPayload(apiConfiguration));
+    issuerApiForNonEncryptedPayload = new IssuerApi(setupForNonEncryptedPayload(apiConfiguration));
+  }
 
-     private ApiClient setupForEncryptedPayload(ApiConfiguration apiConfiguration) throws ServiceException {
-        OkHttpClient client = new OkHttpClient().newBuilder().
-                addInterceptor(
-                new OkHttpFieldLevelEncryptionInterceptor(
+  private ApiClient setupForEncryptedPayload(ApiConfiguration apiConfiguration) throws ServiceException {
+    OkHttpClient client = new OkHttpClient().newBuilder().
+      addInterceptor(
+        new OkHttpFieldLevelEncryptionInterceptor(
 
-                        EncryptionHelper.encryptionConfig(apiConfiguration.getEncryptionKeyFile()))).
-                addInterceptor(
-                new OkHttpOAuth1Interceptor(apiConfiguration.getConsumerKey(), apiConfiguration.getSigningKey()))
-
-                .build();
-
-        return new ApiClient().setHttpClient(client).setBasePath(apiConfiguration.getBasePath());
-    }
-
-    private ApiClient setupForNonEncryptedPayload(ApiConfiguration apiConfiguration) {
-        OkHttpClient client = new OkHttpClient().newBuilder().
-
-        addInterceptor(
+          EncryptionHelper.encryptionConfig(apiConfiguration.getEncryptionKeyFile()))).
+      addInterceptor(
         new OkHttpOAuth1Interceptor(apiConfiguration.getConsumerKey(), apiConfiguration.getSigningKey()))
 
-                .build();
+      .build();
 
-        return new ApiClient().setHttpClient(client).setBasePath(apiConfiguration.getBasePath());
+    return new ApiClient().setHttpClient(client).setBasePath(apiConfiguration.getBasePath());
+  }
+
+  private ApiClient setupForNonEncryptedPayload(ApiConfiguration apiConfiguration) {
+    OkHttpClient client = new OkHttpClient().newBuilder().
+
+      addInterceptor(
+        new OkHttpOAuth1Interceptor(apiConfiguration.getConsumerKey(), apiConfiguration.getSigningKey()))
+
+      .build();
+
+    return new ApiClient().setHttpClient(client).setBasePath(apiConfiguration.getBasePath());
+  }
+
+  @Override
+  public Dashboard getAuthToken(String userPpctId) throws ServiceException {
+    Dashboard dashboard;
+    try {
+      dashboard = issuerApiForNonEncryptedPayload.getAuthToken(userPpctId);
+    } catch (ApiException e) {
+      log.error("Exception occurred while getting dashboard url {}", e.getResponseBody());
+      throw new ServiceException(e.getMessage(), deserializeErrors(e.getResponseBody()));
+    }
+    return dashboard;
+  }
+
+  @Override
+  public AggregateCarbonScore getAggregateCarbonScore(String userPpctId) throws ServiceException {
+
+    AggregateCarbonScore aggregateCarbonScore;
+    try {
+      aggregateCarbonScore = issuerApiForNonEncryptedPayload.getAggregateCarbonScore(userPpctId);
+    } catch (ApiException e) {
+      log.error("Exception occurred while getting Aggregate carbon score url {}", e.getResponseBody());
+
+      throw new ServiceException(e.getMessage(), deserializeErrors(e.getResponseBody()));
     }
 
-    @Override
-    public Dashboard getAuthToken(String userPpctId) throws ServiceException {
-        Dashboard dashboard;
-        try {
-            dashboard = issuerApiForNonEncryptedPayload.getAuthToken(userPpctId);
-        } catch (ApiException e) {
-            throw new ServiceException(e.getMessage(), deserializeErrors(e.getResponseBody()));
-        }
-        return dashboard;
+    return aggregateCarbonScore;
+  }
+
+  @Override
+  public UserReference userRegistration(UserProfile userProfile) throws ServiceException {
+    UserReference userReference;
+    try {
+      userReference = issuerApiForEncryptedPayload.userRegistration(userProfile);
+    } catch (ApiException e) {
+      log.error("Exception occurred while registering new user {}", e.getResponseBody());
+
+      throw new ServiceException(e.getMessage(), deserializeErrors(e.getResponseBody()));
     }
 
-    @Override
-    public AggregateCarbonScore getAggregateCarbonScore(String userPpctId) throws ServiceException {
+    return userReference;
+  }
 
-        AggregateCarbonScore aggregateCarbonScore;
-        try {
-            aggregateCarbonScore = issuerApiForNonEncryptedPayload.getAggregateCarbonScore(userPpctId);
-        } catch (ApiException e) {
-            throw new ServiceException(e.getMessage(), deserializeErrors(e.getResponseBody()));
-        }
+  @Override
+  public ResponseEntity<List<String>> deleteUsers(List<String> requestBody) throws ServiceException {
+    List<String> deletedUsers;
+    try {
+      deletedUsers = issuerApiForNonEncryptedPayload.deleteUsers(requestBody);
 
-        return aggregateCarbonScore;
+    } catch (ApiException e) {
+      log.error("Exception occurred while deleting a user {}", e.getResponseBody());
+
+      throw new ServiceException(e.getMessage(), deserializeErrors(e.getResponseBody()));
+    }
+    return new ResponseEntity<>(deletedUsers, HttpStatus.ACCEPTED);
+  }
+
+
+  @Override
+  public IssuerProfile updateIssuer(IssuerConfiguration issuerConfiguration) throws ServiceException {
+    IssuerProfile profile;
+    try {
+      profile = issuerApiForNonEncryptedPayload.updateIssuer(issuerConfiguration);
+
+    } catch (ApiException e) {
+      log.error("Exception occurred while updating the issuer {}", e.getResponseBody());
+
+      throw new ServiceException(e.getMessage(), deserializeErrors(e.getResponseBody()));
+
+    }
+    return profile;
+  }
+
+  @Override
+  public IssuerProfileDetails getIssuer() throws ServiceException {
+
+    IssuerProfileDetails issuerProfileDetails;
+    try {
+      issuerProfileDetails = issuerApiForNonEncryptedPayload.getIssuer();
+    } catch (ApiException e) {
+      log.error("Exception occurred while getting issuer details {}",e.getResponseBody());
+
+      throw new ServiceException(e.getMessage(), deserializeErrors(e.getResponseBody()));
     }
 
-    @Override
-    public UserReference userRegistration(UserProfile userProfile) throws ServiceException {
-        UserReference userReference;
-        try {
-            userReference = issuerApiForEncryptedPayload.userRegistration(userProfile);
-        } catch (ApiException e) {
-            throw new ServiceException(e.getMessage(), deserializeErrors(e.getResponseBody()));
-        }
-
-        return userReference;
-    }
-
-    @Override
-    public ResponseEntity<List<String>> deleteUsers(List<String> requestBody) throws ServiceException {
-        List<String> deletedUsers;
-        try {
-            deletedUsers = issuerApiForNonEncryptedPayload.deleteUsers(requestBody);
-
-        } catch (ApiException e) {
-            throw new ServiceException(e.getMessage(), deserializeErrors(e.getResponseBody()));
-        }
-        return new ResponseEntity<>(deletedUsers, HttpStatus.ACCEPTED);
-    }
-
-
-    @Override
-    public IssuerProfile updateIssuer(IssuerConfiguration issuerConfiguration) throws ServiceException {
-            IssuerProfile profile ;
-            try {
-                profile = issuerApiForNonEncryptedPayload.updateIssuer(issuerConfiguration);
-
-            } catch (ApiException e) {
-                throw new ServiceException(e.getMessage(), deserializeErrors(e.getResponseBody()));
-
-            }
-            return profile;
-        }
-    @Override
-    public IssuerProfileDetails getIssuer() throws ServiceException {
-
-        IssuerProfileDetails issuerProfileDetails;
-        try {
-            issuerProfileDetails = issuerApiForNonEncryptedPayload.getIssuer();
-        } catch (ApiException e) {
-            throw new ServiceException(e.getMessage(), deserializeErrors(e.getResponseBody()));
-        }
-
-        return issuerProfileDetails;
-    }
+    return issuerProfileDetails;
+  }
 }

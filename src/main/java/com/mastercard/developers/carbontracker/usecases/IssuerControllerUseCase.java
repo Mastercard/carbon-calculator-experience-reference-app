@@ -4,6 +4,7 @@ package com.mastercard.developers.carbontracker.usecases;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import com.mastercard.developers.carbontracker.service.IssuerService;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
@@ -47,7 +48,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @ExtendWith(MockitoExtension.class)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-public class IssuerControllerTest {
+@Slf4j
+public class IssuerControllerUseCase {
 
   @Autowired
   private MockMvc mockMvc;
@@ -57,36 +59,37 @@ public class IssuerControllerTest {
 
   @Autowired
   private IssuerService issuerService;
-  private String userId = null;
+
+  private static String userId;
 
 
   @Autowired
   ObjectMapper objectMapper;
 
-  private String xOpenApiClientId = "x-openapi-clientid";
-  private String clientId = "aqkxHK2SNxsPci-m5vBJ_EkgG_5XnIaN0ocVfVoEdb4a5922";
   private String applicationJson = "application/json";
 
   @Test
   @DisplayName("Test deleteUsers")
+  @Order(4)
   void testDeleteUsers() throws Exception {
 
-    String userId1 = "1653fbe5-4d70-4595-a3fa-a52249a2b6d3";
-
+    log.info("Deleting user call started");
     List<String> stringList = new ArrayList<>();
-    stringList.add(userId1);
+    stringList.add(userId);
 
+    log.info("User being deleted is : {} ", userId);
 
     String request = objectMapper.writeValueAsString(stringList);
 
     MvcResult mvcResult = mockMvc
       .perform(post(DELETE_USER).content(request)
-        .contentType(applicationJson)
-        .header(xOpenApiClientId, clientId))
+        .contentType(applicationJson))
       .andExpect(status().isAccepted()).andReturn();
 
 
     String actual = mvcResult.getResponse().getContentAsString();
+
+    log.info("response received for delete user request is : {} ", actual);
     assertNotNull(actual);
   }
 
@@ -95,12 +98,17 @@ public class IssuerControllerTest {
   @DisplayName("Test getAggregateCarbonScore")
   @Order(2)
   void getAggregateCarbonScore() throws Exception {
+
+    log.info("Getting Aggregate carbon score for user id  : {} ", userId);
     MvcResult mvcResult = mockMvc.perform(get(AGGREGATE_CARBON_SCORE, userId)
       .contentType(applicationJson)).andExpect(status().isOk()).andReturn();
 
     String actual = mvcResult.getResponse().getContentAsString();
 
     AggregateCarbonScore aggregateCarbonScore = gson.fromJson(actual, AggregateCarbonScore.class);
+
+    log.info("Response received for Aggregate carbon score : {}", aggregateCarbonScore);
+
     // ASSERT
     assertNotNull(aggregateCarbonScore);
     assertNotNull(aggregateCarbonScore.getCarbonEmissionInGrams());
@@ -112,6 +120,7 @@ public class IssuerControllerTest {
   @Test
   @Order(3)
   void getDashboardUrl() throws Exception {
+    log.info("Getting DashBoard Url for user id  : {} ", userId);
 
     MvcResult mvcResult = mockMvc.perform(get(DASHBOARDS, userId)
       .contentType(applicationJson)).andExpect(status().isOk()).andReturn();
@@ -119,6 +128,9 @@ public class IssuerControllerTest {
     String actual = mvcResult.getResponse().getContentAsString();
 
     Dashboard dashboardResponse = gson.fromJson(actual, Dashboard.class);
+
+    log.info("Response received for  DashBoard Url {} ", dashboardResponse);
+
     // ASSERT
     assertNotNull(dashboardResponse);
     assertNotNull(dashboardResponse.getExpiryInMillis());
@@ -146,14 +158,19 @@ public class IssuerControllerTest {
   @DisplayName("Verify updateServiceProvider() method")
   void testUpdateServiceProvider() throws Exception {
 
+
+    log.info("Update issuer call started ");
+
     IssuerConfiguration issuerConfiguration = new IssuerConfiguration();
     final String range = "5050,5051";
     issuerConfiguration.callbackUrl("https://confluence.mastercard.int/pages/viewpage.action?pageId=508046358aMkhe");
     issuerConfiguration.setSupportedAccountRange(range);
 
-    MvcResult mvcResult = mockMvc.perform(put(UPDATE_USER).contentType("application/json").header(xOpenApiClientId, clientId)
+    MvcResult mvcResult = mockMvc.perform(put(UPDATE_USER).contentType("application/json")
       .content(new Gson().toJson(issuerConfiguration)))
       .andExpect(status().isOk()).andReturn();
+
+    log.info("Response received for update issuer call {}", mvcResult.getResponse().getContentAsString());
 
     assertNotNull(mvcResult.getResponse().getContentAsString());
 
@@ -164,12 +181,17 @@ public class IssuerControllerTest {
   @DisplayName("Test getIssuerDetails")
   void getIssuerDetails() throws Exception {
 
+    log.info("Get issuer call started ");
+
     MvcResult mvcResult = mockMvc.perform(get(GET_ISSUER)
       .contentType(applicationJson)).andExpect(status().isOk()).andReturn();
 
     String actual = mvcResult.getResponse().getContentAsString();
 
     IssuerProfileDetails dashboardResponse = gson.fromJson(actual, IssuerProfileDetails.class);
+
+    log.info("Response for Get issuer {} ", dashboardResponse);
+
     // ASSERT
     assertNotNull(dashboardResponse);
     assertNotNull(dashboardResponse.getCurrencyCode());
@@ -184,24 +206,32 @@ public class IssuerControllerTest {
   @Order(1)
   void userRegistration() throws Exception {
 
+    log.info("User registration  call started ");
+
     String userRegisterJson = getFileAsString("user-registration-duplicate-user-request.json");
 
     MvcResult mvcResult = mockMvc.perform(post(ADD_USER)
-      .contentType(applicationJson).header(xOpenApiClientId, clientId).content(userRegisterJson)).andExpect(status().isOk()).andReturn();
+      .contentType(applicationJson).content(userRegisterJson)).andExpect(status().isOk()).andReturn();
 
     String actual = mvcResult.getResponse().getContentAsString();
 
 
     UserReference userReference = gson.fromJson(actual, UserReference.class);
+
+    log.info("Response for User registration call is {} ", userReference);
+
     // ASSERT
     assertNotNull(userReference);
     assertNotNull(userReference.getUserid());
 //
-    userId = userReference.getUserid();
+    IssuerControllerUseCase.userId = userReference.getUserid();
+
     assertNotNull(userReference.getCardNumberLastFourDigits());
     assertNotNull(userReference.getStatus());
 
     assertEquals(200, mvcResult.getResponse().getStatus());
+
+
   }
 
 

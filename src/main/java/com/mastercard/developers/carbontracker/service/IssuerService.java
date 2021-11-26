@@ -14,16 +14,17 @@ import java.util.List;
 
 public interface IssuerService {
 
-    Dashboard getAuthToken(String userPpctId) throws ServiceException;
+  Dashboard getAuthToken(String userPpctId) throws ServiceException;
 
-    AggregateCarbonScore getAggregateCarbonScore(String userPpctId) throws ServiceException;
+  AggregateCarbonScore getAggregateCarbonScore(String userPpctId) throws ServiceException;
 
-    UserReference userRegistration (UserProfile userProfile) throws ServiceException;
-    ResponseEntity<List<String>> deleteUsers(List<String> requestBody) throws ServiceException;
+  UserReference userRegistration(UserProfile userProfile) throws ServiceException;
+
+  ResponseEntity<List<String>> deleteUsers(List<String> requestBody) throws ServiceException;
 
 
-    IssuerProfile updateIssuer(IssuerConfiguration issuerConfiguration)throws ServiceException;
+  IssuerProfile updateIssuer(IssuerConfiguration issuerConfiguration) throws ServiceException;
 
-    IssuerProfileDetails getIssuer() throws ServiceException;
+  IssuerProfileDetails getIssuer() throws ServiceException;
 
 }

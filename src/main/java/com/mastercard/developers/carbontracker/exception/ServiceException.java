@@ -19,22 +19,22 @@ import org.openapitools.client.model.ErrorWrapper;
 
 public class ServiceException extends Exception {
 
-    private final transient ErrorWrapper errors = new ErrorWrapper();
+  private final transient ErrorWrapper errors = new ErrorWrapper();
 
-    public ServiceException(String message, ErrorWrapper serviceErrors) {
-        super(message);
-        errors.setErrors(serviceErrors.getErrors());
-    }
+  public ServiceException(String message, ErrorWrapper serviceErrors) {
+    super(message);
+    errors.setErrors(serviceErrors.getErrors());
+  }
 
-    public ErrorWrapper getServiceErrors() {
-        return errors;
-    }
+  public ErrorWrapper getServiceErrors() {
+    return errors;
+  }
 
-    public ServiceException(String errorMessage) {
-        super(errorMessage);
-    }
+  public ServiceException(String errorMessage) {
+    super(errorMessage);
+  }
 
-    public ServiceException(Throwable cause) {
-        super(cause);
-    }
+  public ServiceException(Throwable cause) {
+    super(cause);
+  }
 }
