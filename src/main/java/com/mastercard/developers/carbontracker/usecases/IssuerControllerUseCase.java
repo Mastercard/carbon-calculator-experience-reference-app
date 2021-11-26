@@ -224,7 +224,7 @@ public class IssuerControllerUseCase {
     assertNotNull(userReference);
     assertNotNull(userReference.getUserid());
 //
-    IssuerControllerUseCase.userId = userReference.getUserid();
+    setUserId(userReference.getUserid());
 
     assertNotNull(userReference.getCardNumberLastFourDigits());
     assertNotNull(userReference.getStatus());
@@ -233,6 +233,12 @@ public class IssuerControllerUseCase {
 
 
   }
+
+  private static void setUserId(String userID)
+  {
+    IssuerControllerUseCase.userId=userID;
+  }
+
 
 
 }
