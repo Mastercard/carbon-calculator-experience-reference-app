@@ -19,13 +19,13 @@ import org.openapitools.client.model.ErrorWrapper;
 
 public class JSON {
 
-    private static final org.openapitools.client.JSON INSTANCE = new org.openapitools.client.JSON();
+  private static final org.openapitools.client.JSON INSTANCE = new org.openapitools.client.JSON();
 
-    private JSON() {
-    }
+  private JSON() {
+  }
 
-    public static ErrorWrapper deserializeErrors(String body) {
-        return INSTANCE.deserialize(body, ErrorWrapper.class);
-    }
+  public static ErrorWrapper deserializeErrors(String body) {
+    return INSTANCE.deserialize(body, ErrorWrapper.class);
+  }
 
 }

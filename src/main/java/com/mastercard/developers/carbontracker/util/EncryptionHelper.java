@@ -25,40 +25,40 @@ import java.security.cert.X509Certificate;
 
 public class EncryptionHelper {
 
-    private EncryptionHelper() {
+  private EncryptionHelper() {
 
+  }
+
+  /**
+   * This method is use setup the encryption config to perform encryption on real data.
+   * * (See Mastercard Encryption Library <a href>https://github.com/Mastercard/client-encryption-java</a>)
+   * *
+   *
+   * @param encryptionKeyFile Resource clientPem file.
+   * @return FieldLevelEncryptionConfig
+   */
+  public static FieldLevelEncryptionConfig encryptionConfig(Resource encryptionKeyFile)
+          throws ServiceException {
+    try {
+
+      X509Certificate cert = (X509Certificate) EncryptionUtils.loadEncryptionCertificate(
+              encryptionKeyFile.getFile().getAbsolutePath());
+
+
+      return FieldLevelEncryptionConfigBuilder
+              .aFieldLevelEncryptionConfig()
+              .withEncryptionCertificate(cert)
+              .withEncryptionPath("$", "$")
+              .withEncryptedValueFieldName("encryptedData")
+              .withEncryptedKeyFieldName("encryptedKey")
+              .withOaepPaddingDigestAlgorithmFieldName("oaepHashingAlgorithm")
+              .withOaepPaddingDigestAlgorithm("SHA-256")
+              .withEncryptionKeyFingerprintFieldName("publicKeyFingerprint")
+              .withIvFieldName("iv")
+              .withFieldValueEncoding(FieldLevelEncryptionConfig.FieldValueEncoding.HEX)
+              .build();
+    } catch (Exception e) {
+      throw new ServiceException(e);
     }
-
-    /**
-     * This method is use setup the encryption config to perform encryption on real data.
-     * * (See Mastercard Encryption Library <a href>https://github.com/Mastercard/client-encryption-java</a>)
-     * *
-     *
-     * @param encryptionKeyFile Resource clientPem file.
-     * @return FieldLevelEncryptionConfig
-     */
-    public static FieldLevelEncryptionConfig encryptionConfig(Resource encryptionKeyFile)
-            throws ServiceException {
-        try {
-
-            X509Certificate cert = (X509Certificate) EncryptionUtils.loadEncryptionCertificate(
-                    encryptionKeyFile.getFile().getAbsolutePath());
-
-
-            return FieldLevelEncryptionConfigBuilder
-                    .aFieldLevelEncryptionConfig()
-                    .withEncryptionCertificate(cert)
-                    .withEncryptionPath("$", "$")
-                    .withEncryptedValueFieldName("encryptedData")
-                    .withEncryptedKeyFieldName("encryptedKey")
-                    .withOaepPaddingDigestAlgorithmFieldName("oaepHashingAlgorithm")
-                    .withOaepPaddingDigestAlgorithm("SHA-256")
-                    .withEncryptionKeyFingerprintFieldName("publicKeyFingerprint")
-                    .withIvFieldName("iv")
-                    .withFieldValueEncoding(FieldLevelEncryptionConfig.FieldValueEncoding.HEX)
-                    .build();
-        } catch (Exception e) {
-            throw new ServiceException(e);
-        }
-    }
+  }
 }
