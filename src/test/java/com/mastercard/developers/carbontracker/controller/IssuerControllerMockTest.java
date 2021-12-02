@@ -44,6 +44,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class IssuerControllerMockTest {
+
   @Mock
   private IssuerService issuerService;
 
@@ -54,23 +55,21 @@ public class IssuerControllerMockTest {
 
   ObjectMapper objectMapper;
 
-
   private static final Gson gson =
     new GsonBuilder()
       .disableHtmlEscaping()
       .create();
 
   private final String X_OPENAPI_CLIENTID = "x-openapi-clientid";
-  private String CLIENTID = "aqkxHK2SNxsPci-m5vBJ_EkgG_5XnIaN0ocVfVoEdb4a5922";
+  private final String CLIENTID = "aqkxHK2SNxsPci-m5vBJ_EkgG_5XnIaN0ocVfVoEdb4a5922";
 
-
+  @SuppressWarnings("deprecation")
   @BeforeAll
   void setUp() {
     MockitoAnnotations.initMocks(this);
     objectMapper = new ObjectMapper();
     mockMvc = MockMvcBuilders.standaloneSetup(issuerController).build();
   }
-
 
   @Test
   @DisplayName("Get Auth token")
@@ -84,11 +83,9 @@ public class IssuerControllerMockTest {
 
     String actual = mvcResult.getResponse().getContentAsString();
 
-
     Dashboard dashboardResponse = gson.fromJson(actual, Dashboard.class);
     // ASSERT
     assertNotNull(dashboardResponse);
-
   }
 
   @Test
@@ -102,7 +99,6 @@ public class IssuerControllerMockTest {
       .contentType("application/json")).andExpect(status().isOk()).andReturn();
 
     String actual = mvcResult.getResponse().getContentAsString();
-
 
     AggregateCarbonScore response = gson.fromJson(actual, AggregateCarbonScore.class);
     // ASSERT
@@ -167,7 +163,6 @@ public class IssuerControllerMockTest {
 
   }
 
-
   @Test
   @DisplayName("Test deleteUsers")
   void testDeleteUsers() throws Exception {
@@ -175,10 +170,9 @@ public class IssuerControllerMockTest {
 
     List<String> stringList = new ArrayList<>();
     stringList.add(userId1);
-
-
+    
     String request = objectMapper.writeValueAsString(stringList);
-    ResponseEntity<List<String>> res = new ResponseEntity<List<String>>(HttpStatus.ACCEPTED);
+    ResponseEntity<List<String>> res = new ResponseEntity<>(HttpStatus.ACCEPTED);
     when(issuerService.deleteUsers(any())).thenReturn(res);
 
     MvcResult mvcResult = mockMvc

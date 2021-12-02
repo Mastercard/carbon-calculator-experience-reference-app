@@ -31,8 +31,8 @@ import static com.mastercard.developers.carbontracker.util.JSON.deserializeError
 @Service
 public class IssuerServiceImpl implements IssuerService {
 
-  private IssuerApi issuerApiForEncryptedPayload;
-  private IssuerApi issuerApiForNonEncryptedPayload;
+  private final IssuerApi issuerApiForEncryptedPayload;
+  private final IssuerApi issuerApiForNonEncryptedPayload;
 
   @Autowired
   public IssuerServiceImpl(ApiConfiguration apiConfiguration) throws ServiceException {
@@ -45,11 +45,9 @@ public class IssuerServiceImpl implements IssuerService {
     OkHttpClient client = new OkHttpClient().newBuilder().
       addInterceptor(
         new OkHttpFieldLevelEncryptionInterceptor(
-
           EncryptionHelper.encryptionConfig(apiConfiguration.getEncryptionKeyFile()))).
       addInterceptor(
         new OkHttpOAuth1Interceptor(apiConfiguration.getConsumerKey(), apiConfiguration.getSigningKey()))
-
       .build();
 
     return new ApiClient().setHttpClient(client).setBasePath(apiConfiguration.getBasePath());
@@ -57,11 +55,8 @@ public class IssuerServiceImpl implements IssuerService {
 
   private ApiClient setupForNonEncryptedPayload(ApiConfiguration apiConfiguration) {
     OkHttpClient client = new OkHttpClient().newBuilder().
-
       addInterceptor(
-        new OkHttpOAuth1Interceptor(apiConfiguration.getConsumerKey(), apiConfiguration.getSigningKey()))
-
-      .build();
+        new OkHttpOAuth1Interceptor(apiConfiguration.getConsumerKey(), apiConfiguration.getSigningKey())).build();
 
     return new ApiClient().setHttpClient(client).setBasePath(apiConfiguration.getBasePath());
   }
@@ -144,7 +139,7 @@ public class IssuerServiceImpl implements IssuerService {
     try {
       issuerProfileDetails = issuerApiForNonEncryptedPayload.getIssuer();
     } catch (ApiException e) {
-      log.error("Exception occurred while getting issuer details {}",e.getResponseBody());
+      log.error("Exception occurred while getting issuer details {}", e.getResponseBody());
 
       throw new ServiceException(e.getMessage(), deserializeErrors(e.getResponseBody()));
     }

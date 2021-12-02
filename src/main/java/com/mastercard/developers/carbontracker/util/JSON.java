@@ -28,7 +28,4 @@ public class JSON {
         return INSTANCE.deserialize(body, ErrorWrapper.class);
     }
 
-    public static String serializeErrors(ErrorWrapper body) {
-        return INSTANCE.serialize(body);
-    }
 }

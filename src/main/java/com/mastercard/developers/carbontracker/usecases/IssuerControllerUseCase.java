@@ -1,244 +1,156 @@
 package com.mastercard.developers.carbontracker.usecases;
 
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.gson.Gson;
+import com.mastercard.developers.carbontracker.exception.ServiceException;
 import com.mastercard.developers.carbontracker.service.IssuerService;
+import com.mastercard.developers.carbontracker.util.CreditCardGenerator;
 import lombok.extern.slf4j.Slf4j;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.MethodOrderer;
-import org.junit.jupiter.api.Order;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestMethodOrder;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.apache.commons.lang3.RandomStringUtils;
+import org.openapitools.client.model.Address;
 import org.openapitools.client.model.AggregateCarbonScore;
+import org.openapitools.client.model.CardExpiry;
 import org.openapitools.client.model.Dashboard;
+import org.openapitools.client.model.Email;
 import org.openapitools.client.model.IssuerConfiguration;
-import org.openapitools.client.model.IssuerProfileDetails;
+import org.openapitools.client.model.UserName;
+import org.openapitools.client.model.UserProfile;
 import org.openapitools.client.model.UserReference;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Component;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.mastercard.developers.carbontracker.util.ServiceEndpoints.ADD_USER;
-import static com.mastercard.developers.carbontracker.util.ServiceEndpoints.AGGREGATE_CARBON_SCORE;
-import static com.mastercard.developers.carbontracker.util.ServiceEndpoints.DASHBOARDS;
-import static com.mastercard.developers.carbontracker.util.ServiceEndpoints.DELETE_USER;
-import static com.mastercard.developers.carbontracker.util.ServiceEndpoints.GET_ISSUER;
-import static com.mastercard.developers.carbontracker.util.ServiceEndpoints.UPDATE_USER;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-@SpringBootTest
-@AutoConfigureMockMvc
-@ExtendWith(MockitoExtension.class)
-@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @Slf4j
+@Component
 public class IssuerControllerUseCase {
 
-  @Autowired
-  private MockMvc mockMvc;
+  private final IssuerService issuerService;
+
+  @Value("${binRange}")
+  private String binRange;
 
   @Autowired
-  private Gson gson;
-
-  @Autowired
-  private IssuerService issuerService;
-
-  private static String userId;
-
-
-  @Autowired
-  ObjectMapper objectMapper;
-
-  private String applicationJson = "application/json";
-
-  @Test
-  @DisplayName("Test deleteUsers")
-  @Order(4)
-  void testDeleteUsers() throws Exception {
-
-    log.info("Deleting user call started");
-    List<String> stringList = new ArrayList<>();
-    stringList.add(userId);
-
-    log.info("User being deleted is : {} ", userId);
-
-    String request = objectMapper.writeValueAsString(stringList);
-
-    MvcResult mvcResult = mockMvc
-      .perform(post(DELETE_USER).content(request)
-        .contentType(applicationJson))
-      .andExpect(status().isAccepted()).andReturn();
-
-
-    String actual = mvcResult.getResponse().getContentAsString();
-
-    log.info("response received for delete user request is : {} ", actual);
-    assertNotNull(actual);
+  public IssuerControllerUseCase(IssuerService issuerService) {
+    this.issuerService = issuerService;
   }
 
+  public void b2BCalls() {
 
-  @Test
-  @DisplayName("Test getAggregateCarbonScore")
-  @Order(2)
-  void getAggregateCarbonScore() throws Exception {
-
-    log.info("Getting Aggregate carbon score for user id  : {} ", userId);
-    MvcResult mvcResult = mockMvc.perform(get(AGGREGATE_CARBON_SCORE, userId)
-      .contentType(applicationJson)).andExpect(status().isOk()).andReturn();
-
-    String actual = mvcResult.getResponse().getContentAsString();
-
-    AggregateCarbonScore aggregateCarbonScore = gson.fromJson(actual, AggregateCarbonScore.class);
-
-    log.info("Response received for Aggregate carbon score : {}", aggregateCarbonScore);
-
-    // ASSERT
-    assertNotNull(aggregateCarbonScore);
-    assertNotNull(aggregateCarbonScore.getCarbonEmissionInGrams());
-    assertNotNull(aggregateCarbonScore.getAggregateDate());
+    log.info("Fetching Issuer details for given client");
+    getIssuerDetail();
+    updateIssuerDetails();
+    String userId = userRegistration();
+    getAggregateScores(userId);
+    getDashboardUrl(userId);
+    deleteUser(userId);
 
   }
 
-
-  @Test
-  @Order(3)
-  void getDashboardUrl() throws Exception {
-    log.info("Getting DashBoard Url for user id  : {} ", userId);
-
-    MvcResult mvcResult = mockMvc.perform(get(DASHBOARDS, userId)
-      .contentType(applicationJson)).andExpect(status().isOk()).andReturn();
-
-    String actual = mvcResult.getResponse().getContentAsString();
-
-    Dashboard dashboardResponse = gson.fromJson(actual, Dashboard.class);
-
-    log.info("Response received for  DashBoard Url {} ", dashboardResponse);
-
-    // ASSERT
-    assertNotNull(dashboardResponse);
-    assertNotNull(dashboardResponse.getExpiryInMillis());
-    assertNotNull(dashboardResponse.getUrl());
-
-  }
-
-  public static String getFileAsString(String filePath) throws IOException {
-    ClassPathResource classPathResource = new ClassPathResource(filePath);
-    return new String(readAll(classPathResource.getInputStream()), StandardCharsets.UTF_8);
-  }
-
-  public static byte[] readAll(InputStream inputStream) throws IOException {
-    ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-    int nRead;
-    byte[] data = new byte[1024];
-    while ((nRead = inputStream.read(data, 0, data.length)) != -1) {
-      buffer.write(data, 0, nRead);
+  private void getIssuerDetail() {
+    try {
+      log.info("Fetching issuer details ");
+      issuerService.getIssuer();
+    } catch (ServiceException e) {
+      log.info("Exception while fetching issuer details" + e.getMessage());
     }
-    buffer.flush();
-    return buffer.toByteArray();
   }
 
-  @Test
-  @DisplayName("Verify updateServiceProvider() method")
-  void testUpdateServiceProvider() throws Exception {
-
-
-    log.info("Update issuer call started ");
-
-    IssuerConfiguration issuerConfiguration = new IssuerConfiguration();
-    final String range = "5050,5051";
-    issuerConfiguration.callbackUrl("https://confluence.mastercard.int/pages/viewpage.action?pageId=508046358aMkhe");
-    issuerConfiguration.setSupportedAccountRange(range);
-
-    MvcResult mvcResult = mockMvc.perform(put(UPDATE_USER).contentType("application/json")
-      .content(new Gson().toJson(issuerConfiguration)))
-      .andExpect(status().isOk()).andReturn();
-
-    log.info("Response received for update issuer call {}", mvcResult.getResponse().getContentAsString());
-
-    assertNotNull(mvcResult.getResponse().getContentAsString());
-
-
+  private void updateIssuerDetails() {
+    try {
+      log.info("Updating issuer details ");
+      IssuerConfiguration issuerConfiguration = new IssuerConfiguration();
+      issuerConfiguration.setSupportedAccountRange("5051");
+      issuerService.updateIssuer(issuerConfiguration);
+    } catch (ServiceException e) {
+      log.info("Exception while updating issuer details" + e.getMessage());
+    }
   }
 
-  @Test
-  @DisplayName("Test getIssuerDetails")
-  void getIssuerDetails() throws Exception {
+  private String userRegistration() {
+    String userid = null;
+    try {
+      log.info("Creating a new User");
+      UserReference userReference = issuerService.userRegistration(getUserProfile());
+      if (userReference != null) {
+        userid = userReference.getUserid();
+      }
+    } catch (ServiceException ex) {
+      log.info("Exception occurred while creating a new user {}", ex.getServiceErrors());
+    }
 
-    log.info("Get issuer call started ");
-
-    MvcResult mvcResult = mockMvc.perform(get(GET_ISSUER)
-      .contentType(applicationJson)).andExpect(status().isOk()).andReturn();
-
-    String actual = mvcResult.getResponse().getContentAsString();
-
-    IssuerProfileDetails dashboardResponse = gson.fromJson(actual, IssuerProfileDetails.class);
-
-    log.info("Response for Get issuer {} ", dashboardResponse);
-
-    // ASSERT
-    assertNotNull(dashboardResponse);
-    assertNotNull(dashboardResponse.getCurrencyCode());
-    assertNotNull(dashboardResponse.getCountryCode());
-    assertNotNull(dashboardResponse.getCountryName());
-    assertNotNull(dashboardResponse.getClientId());
-
+    return userid;
   }
 
-  @Test
-  @DisplayName("Test userRegistration")
-  @Order(1)
-  void userRegistration() throws Exception {
+  public void getAggregateScores(String userId) {
+    log.info("Fetching Aggregate Scores for given userId {}", userId);
+    try {
+      AggregateCarbonScore aggregateCarbonScore = issuerService.getAggregateCarbonScore(userId);
+      log.info("Aggregate Carbon score for userID {} is {}", userId, aggregateCarbonScore);
+    } catch (ServiceException ex) {
+      log.info("Exception occurred while fetching aggregate scores :{}", ex.getServiceErrors());
+    }
+  }
 
-    log.info("User registration  call started ");
-
-    String userRegisterJson = getFileAsString("user-registration-duplicate-user-request.json");
-
-    MvcResult mvcResult = mockMvc.perform(post(ADD_USER)
-      .contentType(applicationJson).content(userRegisterJson)).andExpect(status().isOk()).andReturn();
-
-    String actual = mvcResult.getResponse().getContentAsString();
-
-
-    UserReference userReference = gson.fromJson(actual, UserReference.class);
-
-    log.info("Response for User registration call is {} ", userReference);
-
-    // ASSERT
-    assertNotNull(userReference);
-    assertNotNull(userReference.getUserid());
-//
-    setUserId(userReference.getUserid());
-
-    assertNotNull(userReference.getCardNumberLastFourDigits());
-    assertNotNull(userReference.getStatus());
-
-    assertEquals(200, mvcResult.getResponse().getStatus());
-
+  public void getDashboardUrl(String userId) {
+    log.info("Fetching DashBoard url for user id {}", userId);
+    try {
+      Dashboard dashboard = issuerService.getAuthToken(userId);
+      log.info("Dashboard url for given userId {} is {} ", userId, dashboard);
+    } catch (ServiceException ex) {
+      log.info("Exception occuered while calling get Dashboard url for userID {} is {} ", userId, ex.getServiceErrors());
+    }
 
   }
 
-  private static void setUserId(String userID)
-  {
-    IssuerControllerUseCase.userId=userID;
+  public void deleteUser(String userId) {
+    log.info("Deleting user for given user {} ", userId);
+    try {
+      List<String> list = new ArrayList<>();
+      list.add(userId);
+      ResponseEntity<List<String>> response = issuerService.deleteUsers(list);
+      log.info("Response code received for deleting the user is {}", response.getStatusCode());
+    } catch (ServiceException ex) {
+      log.info("Exception occurred while deleting the given user " + ex.getServiceErrors());
+    }
   }
 
+  public UserProfile getUserProfile() {
+    UserProfile userProfile = new UserProfile();
+
+    Email email = new Email();
+    email.setType("home");
+    email.setValue("PPCT" + RandomStringUtils.randomAlphabetic(5) + '.' + RandomStringUtils.randomAlphabetic(5) + "@gmail.com");
+    userProfile.setEmail(email);
+    UserName userName = new UserName();
+    userName.setFirstName("dummmyUserrz");
+    userName.setLastName("Useraf");
+    userProfile.setName(userName);
+
+    userProfile.setCardholderName("dummyaqa User");
+    userProfile.setCardBaseCurrency("USD");
+    String cardNumber = new CreditCardGenerator().generate(binRange, 16);
+    userProfile.setCardNumber(cardNumber);
+
+    CardExpiry cardExpiry = new CardExpiry();
+    cardExpiry.setMonth("09");
+    cardExpiry.setYear("2024");
+    Address address = new Address();
+
+    address.setCountry("USA");
+    address.setLocality("rly station");
+    address.setPostalCode("11746");
+    address.setRegion("Huntington");
+    address.setStreetAddress("7832 West Elm Street");
+    address.setType("work");
+    userProfile.setBillingAddress(address);
+    userProfile.setExpiryInfo(cardExpiry);
+    userProfile.setLocale("en-US");
+
+    return userProfile;
+  }
 
 
 }

@@ -19,6 +19,7 @@ import org.openapitools.client.model.ErrorWrapper;
 
 public class ServiceException extends Exception {
 
+  private static final long serialVersionUID = -3774784390140832276L;
   private final transient ErrorWrapper errors = new ErrorWrapper();
 
   public ServiceException(String message, ErrorWrapper serviceErrors) {
@@ -28,10 +29,6 @@ public class ServiceException extends Exception {
 
   public ErrorWrapper getServiceErrors() {
     return errors;
-  }
-
-  public ServiceException(String errorMessage) {
-    super(errorMessage);
   }
 
   public ServiceException(Throwable cause) {

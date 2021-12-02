@@ -11,3 +11,4 @@ mastercard:
       key-file:  #client-encryption.pem
       fingerprint:  #fingerprint
 
+binRange: #Bin range for the given issuer

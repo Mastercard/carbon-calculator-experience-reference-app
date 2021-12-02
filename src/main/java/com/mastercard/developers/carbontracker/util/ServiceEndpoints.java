@@ -1,7 +1,7 @@
 package com.mastercard.developers.carbontracker.util;
 
 public class ServiceEndpoints {
-  ServiceEndpoints() {
+  private ServiceEndpoints() {
   }
 
   public static final String ADD_USER = "/cts/issuers/users";

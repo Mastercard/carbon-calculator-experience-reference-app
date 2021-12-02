@@ -39,8 +39,7 @@ import static com.mastercard.developers.carbontracker.util.ServiceEndpoints.UPDA
 @Validated
 public class IssuerController {
 
-
-  private IssuerService issuerService;
+  private final IssuerService issuerService;
 
   @Autowired
   public IssuerController(IssuerService issuerService) {

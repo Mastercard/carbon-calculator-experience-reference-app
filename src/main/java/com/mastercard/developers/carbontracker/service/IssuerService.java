@@ -22,7 +22,6 @@ public interface IssuerService {
 
   ResponseEntity<List<String>> deleteUsers(List<String> requestBody) throws ServiceException;
 
-
   IssuerProfile updateIssuer(IssuerConfiguration issuerConfiguration) throws ServiceException;
 
   IssuerProfileDetails getIssuer() throws ServiceException;

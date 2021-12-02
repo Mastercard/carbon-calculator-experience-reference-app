@@ -2,7 +2,6 @@ package com.mastercard.developers.carbontracker.service.impl;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.mastercard.developer.encryption.FieldLevelEncryptionConfig;
 import com.mastercard.developers.carbontracker.configuration.ApiConfiguration;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Assertions;
@@ -39,7 +38,6 @@ import static org.mockito.Mockito.when;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @ExtendWith(MockitoExtension.class)
-
 @Slf4j
 class IssuerServiceImplTest {
 
@@ -52,14 +50,10 @@ class IssuerServiceImplTest {
   @Mock
   private IssuerApi issuerApiForNonEncryptedPayload;
 
-  private static Gson gson =
+  private static final Gson gson =
     new GsonBuilder()
       .disableHtmlEscaping()
       .create();
-
-  private class config extends FieldLevelEncryptionConfig {
-
-  }
 
   @BeforeEach
   public void setUp() throws Exception {
@@ -68,7 +62,6 @@ class IssuerServiceImplTest {
     apiConfiguration = mock(ApiConfiguration.class);
     when(apiConfiguration.getEncryptionKeyFile()).thenReturn(new ClassPathResource("/test.pem"));
     issuerService = new IssuerServiceImpl(apiConfiguration);
-    System.out.println();
   }
 
   @Test
@@ -153,8 +146,8 @@ class IssuerServiceImplTest {
     issuerApiForNonEncryptedPayload = mock(IssuerApi.class);
     ReflectionTestUtils.setField(issuerService, "issuerApiForNonEncryptedPayload", issuerApiForNonEncryptedPayload);
 
-    when(issuerApiForNonEncryptedPayload.deleteUsers(any())).thenReturn(new ArrayList<String>());
-    assertNotNull(issuerService.deleteUsers(new ArrayList<String>()));
+    when(issuerApiForNonEncryptedPayload.deleteUsers(any())).thenReturn(new ArrayList<>());
+    assertNotNull(issuerService.deleteUsers(new ArrayList<>()));
   }
 
   @Test
@@ -167,7 +160,7 @@ class IssuerServiceImplTest {
     ApiException api = new ApiException("ApiException", null, 400, null, gson.toJson(getErrorDetail()));
 
     when(issuerApiForNonEncryptedPayload.deleteUsers(any())).thenThrow(api);
-    Assertions.assertThrows(Exception.class, () -> issuerService.deleteUsers(new ArrayList<String>()));
+    Assertions.assertThrows(Exception.class, () -> issuerService.deleteUsers(new ArrayList<>()));
 
   }
 

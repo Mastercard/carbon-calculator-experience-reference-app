@@ -20,7 +20,7 @@
 - [License](#license)
 
 ## Overview  <a name="overview"></a>
-This is a reference application to demonstrate how Carbon Tracker APIs can be used.
+This is a reference application to demonstrate how Carbon Calculator Experience APIs can be used.
 To call these APIs, consumer key and .p12 file are required from your project on Mastercard Developers.
 
 ## Requirements  <a name="requirements"></a>
@@ -108,8 +108,10 @@ More details can be found [here](https://sandbox.api.mastercard.com/priceless-pl
 1. Run ```mvn clean install``` from the root of the project directory.
 2. There are two ways to execute the use-cases:
     1. Execute the use-cases(test cases):  
-        - Go to ```src/main/java/com/mastercard/developer/carbon-tracker/``` folder.  
-        - Execute each test cases.
+        - Run ```mvn clean install``` from the root of the project directory.
+        - When the project builds successfully, you can run the following command to start the project:
+           java -jar target/carbon-tracker-0.0.1-SNAPSHOT.jar
+        - Above command will start the application and execute all the use cases mentioned in readme file
     
     2. Use REST API based Client( such as [Insomnia](https://insomnia.rest/download/core/) or [Postman](https://www.postman.com/downloads/))  
         - Run ```mvn spring-boot:run``` command to run the application.  
