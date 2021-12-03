@@ -1,8 +1,8 @@
 # Carbon Calculator Experience Reference App
 
-[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=Mastercard_Carbon-Calculator-Experience-Reference-App&metric=alert_status)](https://sonarcloud.io/dashboard?id=Mastercard_Carbon-Calculator-Experience-Reference-App)
-[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=Mastercard_Carbon-Calculator-Experience-Reference-App&metric=coverage)](https://sonarcloud.io/dashboard?id=Mastercard_Carbon-Calculator-Experience-Reference-App)
-[![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=Mastercard_Carbon-Calculator-Experience-Reference-App&metric=code_smells)](https://sonarcloud.io/dashboard?id=Mastercard_Carbon-Calculator-Experience-Reference-App)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=Mastercard_carbon-calculator-experience-reference-app&metric=alert_status)](https://sonarcloud.io/dashboard?id=Mastercard_carbon-calculator-experience-reference-app)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=Mastercard_carbon-calculator-experience-reference-app&metric=coverage)](https://sonarcloud.io/dashboard?id=Mastercard_carbon-calculator-experience-reference-app)
+[![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=Mastercard_carbon-calculator-experience-reference-app&metric=code_smells)](https://sonarcloud.io/dashboard?id=Mastercard_carbon-calculator-experience-reference-app)
 [![](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://github.com/Mastercard/carbon-calculator-experience-reference-app/blob/master/LICENSE)
 
 

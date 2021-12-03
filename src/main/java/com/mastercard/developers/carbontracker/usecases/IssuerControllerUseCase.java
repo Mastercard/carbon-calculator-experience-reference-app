@@ -5,13 +5,15 @@ import com.mastercard.developers.carbontracker.exception.ServiceException;
 import com.mastercard.developers.carbontracker.service.IssuerService;
 import com.mastercard.developers.carbontracker.util.CreditCardGenerator;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.RandomStringUtils;
+import net.bytebuddy.utility.RandomString;
 import org.openapitools.client.model.Address;
 import org.openapitools.client.model.AggregateCarbonScore;
 import org.openapitools.client.model.CardExpiry;
 import org.openapitools.client.model.Dashboard;
 import org.openapitools.client.model.Email;
 import org.openapitools.client.model.IssuerConfiguration;
+import org.openapitools.client.model.IssuerProfile;
+import org.openapitools.client.model.IssuerProfileDetails;
 import org.openapitools.client.model.UserName;
 import org.openapitools.client.model.UserProfile;
 import org.openapitools.client.model.UserReference;
@@ -52,7 +54,8 @@ public class IssuerControllerUseCase {
   private void getIssuerDetail() {
     try {
       log.info("Fetching issuer details ");
-      issuerService.getIssuer();
+      IssuerProfileDetails issuerProfileDetails = issuerService.getIssuer();
+      log.info("Response received for get Issuer details {} ", issuerProfileDetails);
     } catch (ServiceException e) {
       log.info("Exception while fetching issuer details" + e.getMessage());
     }
@@ -63,7 +66,8 @@ public class IssuerControllerUseCase {
       log.info("Updating issuer details ");
       IssuerConfiguration issuerConfiguration = new IssuerConfiguration();
       issuerConfiguration.setSupportedAccountRange("5051");
-      issuerService.updateIssuer(issuerConfiguration);
+      IssuerProfile issuerProfile = issuerService.updateIssuer(issuerConfiguration);
+      log.info("Response received after updating the issuer {}", issuerProfile);
     } catch (ServiceException e) {
       log.info("Exception while updating issuer details" + e.getMessage());
     }
@@ -76,6 +80,7 @@ public class IssuerControllerUseCase {
       UserReference userReference = issuerService.userRegistration(getUserProfile());
       if (userReference != null) {
         userid = userReference.getUserid();
+        log.info("Response for User creation is :{}", userReference);
       }
     } catch (ServiceException ex) {
       log.info("Exception occurred while creating a new user {}", ex.getServiceErrors());
@@ -122,7 +127,7 @@ public class IssuerControllerUseCase {
 
     Email email = new Email();
     email.setType("home");
-    email.setValue("PPCT" + RandomStringUtils.randomAlphabetic(5) + '.' + RandomStringUtils.randomAlphabetic(5) + "@gmail.com");
+    email.setValue("PPCT" + new RandomString().nextString() + "@gmail.com");
     userProfile.setEmail(email);
     UserName userName = new UserName();
     userName.setFirstName("dummmyUserrz");
@@ -151,6 +156,5 @@ public class IssuerControllerUseCase {
 
     return userProfile;
   }
-
 
 }

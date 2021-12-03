@@ -3,7 +3,7 @@ package com.mastercard.developers.carbontracker.util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Random;
+import java.security.SecureRandom;
 
 /**
  * A credit card number generator.
@@ -13,7 +13,7 @@ import java.util.Random;
 public class CreditCardGenerator {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(CreditCardGenerator.class);
-  private final Random random = new Random(System.currentTimeMillis());
+  private final SecureRandom random = new SecureRandom();
 
 
   /**
@@ -40,9 +40,9 @@ public class CreditCardGenerator {
     int checkDigit = this.getCheckDigit(builder.toString());
     builder.append(checkDigit);
     creditCardNumber = builder.toString();
-    LOGGER.info("Generated creditCardNumber {}" , creditCardNumber);
+    LOGGER.info("Generated creditCardNumber {}", creditCardNumber);
     String lastFourDigits = creditCardNumber.substring(creditCardNumber.length() - 4);
-    LOGGER.info("lastFourDigits of creditCardNumber {} " , lastFourDigits);
+    LOGGER.info("lastFourDigits of creditCardNumber {} ", lastFourDigits);
     return creditCardNumber;
   }
 

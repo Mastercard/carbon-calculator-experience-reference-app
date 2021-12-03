@@ -9,10 +9,10 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.mastercard.developers</groupId>
-	<artifactId>carbon-tracker</artifactId>
+	<artifactId>carbon-calculator-experience</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>carbon-tracker</name>
-	<description>carbon tracker reference application</description>
+	<name>carbon-calculator-experience</name>
+	<description>carbon calculator experience reference application</description>
 	<properties>
 		<java.version>11</java.version>
 		<okhttp-version>4.9.1</okhttp-version>
@@ -27,6 +27,7 @@
 		<javax-annotation-version>1.3.2</javax-annotation-version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<default.package>com.mastercard.developers.carbontracker</default.package>
+    <sonar.projectKey>Mastercard_carbon-calculator-experience-reference-app</sonar.projectKey>
 		<sonar.organization>mastercard</sonar.organization>
 		<sonar.host.url>https://sonarcloud.io</sonar.host.url>
 		<jackson-databind-nullable-version>0.2.1</jackson-databind-nullable-version>
