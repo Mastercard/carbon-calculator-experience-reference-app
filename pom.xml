@@ -205,6 +205,43 @@
 					</execution>
 				</executions>
 			</plugin>
+      <plugin>
+        <groupId>org.jacoco</groupId>
+        <artifactId>jacoco-maven-plugin</artifactId>
+        <version>0.8.6</version>
+        <configuration>
+          <excludes>
+            <exclude>com.mastercard.developers.carbontracker.CarbonTrackerApplication</exclude>
+            <exclude>
+              com.mastercard.developers.carbontracker.configuration.ApiConfiguration
+            </exclude>
+            <exclude>
+              com.mastercard.developers.carbontracker.exception.ServiceException
+            </exclude>
+            <exclude>
+              com.mastercard.developers.carbontracker.util.*
+            </exclude>
+            <exclude>
+              com.mastercard.developers.carbontracker.usecases.*
+            </exclude>
+          </excludes>
+        </configuration>
+        <executions>
+          <execution>
+            <id>default-prepare-agent</id>
+            <goals>
+              <goal>prepare-agent</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>jacoco-site</id>
+            <phase>verify</phase>
+            <goals>
+              <goal>report</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
 		</plugins>
 	</build>
 
