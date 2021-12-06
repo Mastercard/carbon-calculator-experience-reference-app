@@ -20,6 +20,7 @@
 - [License](#license)
 
 ## Overview  <a name="overview"></a>
+
 This is a reference application to demonstrate how Carbon Calculator Experience APIs can be used.
 To call these APIs, consumer key and .p12 file are required from your project on Mastercard Developers.
 
@@ -85,7 +86,7 @@ Use this endpoint to get a new token with expiry specified.
 endpoint "/issuers/users/{userid}/aggregate-carbon-scores"<br/>
 Use this endpoint to display the current months' carbon score, to provide a snapshot of their score prior to opening the dashboard.
 
-3. **Create User** <br/>
+3. **Enroll User** <br/>
 endpoint "/issuers/users" <br/>
 Use this endpoint to enrol their customers onto Carbon Calculator Experience platform.
 
@@ -101,7 +102,7 @@ Use this endpoint to delete user registered to Carbon Calculator Experience plat
 endpoint "/issuers"<br/>
 Use this endpoint to update issuer details onboarded to Carbon Calculator Experience Platform.
 
-More details can be found [here](https://sandbox.api.mastercard.com/priceless-planet-carbon-tracker/documentation/use-cases/).    
+More details can be found [here](https://stage.developer.mastercard.com/drafts/priceless-planet-carbon-tracker/staging/documentation/use-cases/).    
 
 
 ## Execute the Use-Cases   <a name="execute-the-use-cases"></a>
@@ -126,11 +127,11 @@ More details can be found [here](https://sandbox.api.mastercard.com/priceless-pl
                                                                                
 ## Service Documentation <a name="documentation"></a>
 
-Carbon Calculator Experience documentation can be found [here](https://sandbox.api.mastercard.com/priceless-planet-carbon-tracker/documentation/use-cases/).
+Carbon Calculator Experience documentation can be found [here](https://stage.developer.mastercard.com/drafts/priceless-planet-carbon-tracker/staging/documentation/use-cases/).
 
 
 ## API Reference <a name="api-reference"></a>
-The Swagger API specification can be found [here](https://sandbox.api.mastercard.com/priceless-planet-carbon-tracker/documentation/api-reference/).
+The Swagger API specification can be found [here](https://stage.developer.mastercard.com/drafts/priceless-planet-carbon-tracker/staging/documentation/api-reference/).
 
 ## Support <a name="support"></a>
 Please send an email to **apisupport@mastercard.com** with any questions or feedback you may have.
