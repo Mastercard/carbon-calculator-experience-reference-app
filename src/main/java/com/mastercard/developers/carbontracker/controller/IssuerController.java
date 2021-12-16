@@ -2,6 +2,7 @@ package com.mastercard.developers.carbontracker.controller;
 
 import com.mastercard.developers.carbontracker.exception.ServiceException;
 import com.mastercard.developers.carbontracker.service.IssuerService;
+import com.mastercard.developers.carbontracker.service.UserRegistrationService;
 import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
 import org.openapitools.client.model.AggregateCarbonScore;
@@ -41,9 +42,12 @@ public class IssuerController {
 
   private final IssuerService issuerService;
 
+  private final UserRegistrationService userRegistrationService;
+
   @Autowired
-  public IssuerController(IssuerService issuerService) {
+  public IssuerController(IssuerService issuerService, UserRegistrationService userRegistrationService) {
     this.issuerService = issuerService;
+    this.userRegistrationService = userRegistrationService;
   }
 
   @GetMapping(DASHBOARDS)
@@ -60,7 +64,7 @@ public class IssuerController {
 
   @PostMapping(ADD_USER)
   public ResponseEntity<UserReference> userRegistration(@ApiParam(value = "User's Personal and Card information which needs to be registered onto Priceless Planet Carbon Tracker platform. This endpoint uses Mastercard payload encryption. Please refer to the **[Payload Encryption](https://mstr.cd/2UPfda0)** page for implementation details.", required = true) @Valid @RequestBody UserProfile userProfile) throws ServiceException {
-    return ResponseEntity.ok(issuerService.userRegistration(userProfile));
+    return ResponseEntity.ok(userRegistrationService.userRegistration(userProfile));
   }
 
   @PutMapping(UPDATE_USER)

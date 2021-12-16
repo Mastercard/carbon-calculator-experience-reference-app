@@ -22,9 +22,6 @@ import org.openapitools.client.model.Errors;
 import org.openapitools.client.model.IssuerConfiguration;
 import org.openapitools.client.model.IssuerProfile;
 import org.openapitools.client.model.IssuerProfileDetails;
-import org.openapitools.client.model.UserProfile;
-import org.openapitools.client.model.UserReference;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.ArrayList;
@@ -56,16 +53,15 @@ class IssuerServiceImplTest {
       .create();
 
   @BeforeEach
-  public void setUp() throws Exception {
+  public void setUp() {
 
 
     apiConfiguration = mock(ApiConfiguration.class);
-    when(apiConfiguration.getEncryptionKeyFile()).thenReturn(new ClassPathResource("/test.pem"));
     issuerService = new IssuerServiceImpl(apiConfiguration);
   }
 
   @Test
-  public void testGetAuthToken() throws Exception {
+  void testGetAuthToken() throws Exception {
 
     issuerApiForNonEncryptedPayload = mock(IssuerApi.class);
     ReflectionTestUtils.setField(issuerService, "issuerApiForNonEncryptedPayload", issuerApiForNonEncryptedPayload);
@@ -75,7 +71,7 @@ class IssuerServiceImplTest {
 
   @Test
   @DisplayName("Throws Exception")
-  public void testGetAuthTokenThrowsException() throws Exception {
+  void testGetAuthTokenThrowsException() throws Exception {
 
 
     issuerApiForNonEncryptedPayload = mock(IssuerApi.class);
@@ -91,7 +87,7 @@ class IssuerServiceImplTest {
 
   @Test
   @DisplayName("getAggregateCarbonScore")
-  public void testGetAggregateCarbonScore() throws Exception {
+  void testGetAggregateCarbonScore() throws Exception {
 
     issuerApiForNonEncryptedPayload = mock(IssuerApi.class);
     ReflectionTestUtils.setField(issuerService, "issuerApiForNonEncryptedPayload", issuerApiForNonEncryptedPayload);
@@ -102,7 +98,7 @@ class IssuerServiceImplTest {
 
   @Test
   @DisplayName("getAggregateCarbonScore throws exception")
-  public void testGetAggregateCarbonScoreThrowsException() throws Exception {
+  void testGetAggregateCarbonScoreThrowsException() throws Exception {
 
     issuerApiForNonEncryptedPayload = mock(IssuerApi.class);
     ReflectionTestUtils.setField(issuerService, "issuerApiForNonEncryptedPayload", issuerApiForNonEncryptedPayload);
@@ -115,33 +111,8 @@ class IssuerServiceImplTest {
   }
 
   @Test
-  @DisplayName("userRegistration")
-  public void testUserRegistration() throws Exception {
-
-    issuerApiForNonEncryptedPayload = mock(IssuerApi.class);
-    ReflectionTestUtils.setField(issuerService, "issuerApiForEncryptedPayload", issuerApiForNonEncryptedPayload);
-
-    when(issuerApiForNonEncryptedPayload.userRegistration(any())).thenReturn(new UserReference());
-    assertNotNull(issuerService.userRegistration(new UserProfile()));
-  }
-
-  @Test
-  @DisplayName("UserRegistration throws exception")
-  public void testUserRegistrationThrowsException() throws Exception {
-
-    issuerApiForNonEncryptedPayload = mock(IssuerApi.class);
-    ReflectionTestUtils.setField(issuerService, "issuerApiForEncryptedPayload", issuerApiForNonEncryptedPayload);
-
-    ApiException api = new ApiException("ApiException", null, 400, null, gson.toJson(getErrorDetail()));
-
-    when(issuerApiForNonEncryptedPayload.userRegistration(any())).thenThrow(api);
-    Assertions.assertThrows(Exception.class, () -> issuerService.userRegistration(new UserProfile()));
-
-  }
-
-  @Test
   @DisplayName("delete user")
-  public void testDeleteUser() throws Exception {
+  void testDeleteUser() throws Exception {
 
     issuerApiForNonEncryptedPayload = mock(IssuerApi.class);
     ReflectionTestUtils.setField(issuerService, "issuerApiForNonEncryptedPayload", issuerApiForNonEncryptedPayload);
@@ -152,7 +123,7 @@ class IssuerServiceImplTest {
 
   @Test
   @DisplayName("delete user throws exception")
-  public void testDeleteUserThrowsException() throws Exception {
+  void testDeleteUserThrowsException() throws Exception {
 
     issuerApiForNonEncryptedPayload = mock(IssuerApi.class);
     ReflectionTestUtils.setField(issuerService, "issuerApiForNonEncryptedPayload", issuerApiForNonEncryptedPayload);
@@ -166,7 +137,7 @@ class IssuerServiceImplTest {
 
   @Test
   @DisplayName("Update user")
-  public void testUpdateUser() throws Exception {
+  void testUpdateUser() throws Exception {
 
     issuerApiForNonEncryptedPayload = mock(IssuerApi.class);
     ReflectionTestUtils.setField(issuerService, "issuerApiForNonEncryptedPayload", issuerApiForNonEncryptedPayload);
@@ -177,7 +148,7 @@ class IssuerServiceImplTest {
 
   @Test
   @DisplayName("update user throws exception")
-  public void testUpdateUserThrowsException() throws Exception {
+  void testUpdateUserThrowsException() throws Exception {
 
     issuerApiForNonEncryptedPayload = mock(IssuerApi.class);
     ReflectionTestUtils.setField(issuerService, "issuerApiForNonEncryptedPayload", issuerApiForNonEncryptedPayload);
@@ -191,7 +162,7 @@ class IssuerServiceImplTest {
 
   @Test
   @DisplayName("Get user")
-  public void testGetUser() throws Exception {
+  void testGetUser() throws Exception {
 
     issuerApiForNonEncryptedPayload = mock(IssuerApi.class);
     ReflectionTestUtils.setField(issuerService, "issuerApiForNonEncryptedPayload", issuerApiForNonEncryptedPayload);
@@ -202,7 +173,7 @@ class IssuerServiceImplTest {
 
   @Test
   @DisplayName("Get user throws exception")
-  public void testGetUserThrowsException() throws Exception {
+  void testGetUserThrowsException() throws Exception {
 
     issuerApiForNonEncryptedPayload = mock(IssuerApi.class);
     ReflectionTestUtils.setField(issuerService, "issuerApiForNonEncryptedPayload", issuerApiForNonEncryptedPayload);

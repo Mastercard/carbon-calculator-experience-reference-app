@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.mastercard.developers.carbontracker.service.IssuerService;
+import com.mastercard.developers.carbontracker.service.UserRegistrationService;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -43,10 +44,13 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class IssuerControllerMockTest {
+class IssuerControllerMockTest {
 
   @Mock
   private IssuerService issuerService;
+
+  @Mock
+  private UserRegistrationService userRegistrationService;
 
   @InjectMocks
   private IssuerController issuerController;
@@ -111,7 +115,7 @@ public class IssuerControllerMockTest {
   void testAddUser() throws Exception {
     UserProfile userProfile = new UserProfile();
     userProfile.setEmail(new Email());
-    when(issuerService.userRegistration(any())).thenReturn(new UserReference());
+    when(userRegistrationService.userRegistration(any())).thenReturn(new UserReference());
     MvcResult mvcResult = mockMvc.perform(MockMvcRequestBuilders.post(ADD_USER)
       .contentType("application/json").header(X_OPENAPI_CLIENTID, CLIENTID).content(gson.toJson(userProfile))).andExpect(status().isOk()).andReturn();
 

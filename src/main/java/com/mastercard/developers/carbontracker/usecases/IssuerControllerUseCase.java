@@ -3,6 +3,7 @@ package com.mastercard.developers.carbontracker.usecases;
 
 import com.mastercard.developers.carbontracker.exception.ServiceException;
 import com.mastercard.developers.carbontracker.service.IssuerService;
+import com.mastercard.developers.carbontracker.service.UserRegistrationService;
 import com.mastercard.developers.carbontracker.util.CreditCardGenerator;
 import lombok.extern.slf4j.Slf4j;
 import net.bytebuddy.utility.RandomString;
@@ -31,12 +32,15 @@ public class IssuerControllerUseCase {
 
   private final IssuerService issuerService;
 
+  private final UserRegistrationService userRegistrationService;
+
   @Value("${binRange}")
   private String binRange;
 
   @Autowired
-  public IssuerControllerUseCase(IssuerService issuerService) {
+  public IssuerControllerUseCase(IssuerService issuerService, UserRegistrationService userRegistrationService) {
     this.issuerService = issuerService;
+    this.userRegistrationService = userRegistrationService;
   }
 
   public void b2BCalls() {
@@ -77,7 +81,7 @@ public class IssuerControllerUseCase {
     String userid = null;
     try {
       log.info("Creating a new User");
-      UserReference userReference = issuerService.userRegistration(getUserProfile());
+      UserReference userReference = userRegistrationService.userRegistration(getUserProfile());
       if (userReference != null) {
         userid = userReference.getUserid();
         log.info("Response for User creation is :{}", userReference);

@@ -1,11 +1,9 @@
 package com.mastercard.developers.carbontracker.service.impl;
 
-import com.mastercard.developer.interceptors.OkHttpFieldLevelEncryptionInterceptor;
 import com.mastercard.developer.interceptors.OkHttpOAuth1Interceptor;
 import com.mastercard.developers.carbontracker.configuration.ApiConfiguration;
 import com.mastercard.developers.carbontracker.exception.ServiceException;
 import com.mastercard.developers.carbontracker.service.IssuerService;
-import com.mastercard.developers.carbontracker.util.EncryptionHelper;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.OkHttpClient;
 import org.openapitools.client.ApiClient;
@@ -16,8 +14,6 @@ import org.openapitools.client.model.Dashboard;
 import org.openapitools.client.model.IssuerConfiguration;
 import org.openapitools.client.model.IssuerProfile;
 import org.openapitools.client.model.IssuerProfileDetails;
-import org.openapitools.client.model.UserProfile;
-import org.openapitools.client.model.UserReference;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -31,26 +27,12 @@ import static com.mastercard.developers.carbontracker.util.JSON.deserializeError
 @Service
 public class IssuerServiceImpl implements IssuerService {
 
-  private final IssuerApi issuerApiForEncryptedPayload;
   private final IssuerApi issuerApiForNonEncryptedPayload;
 
   @Autowired
-  public IssuerServiceImpl(ApiConfiguration apiConfiguration) throws ServiceException {
+  public IssuerServiceImpl(ApiConfiguration apiConfiguration) {
     log.info("Initializing Issuer Service");
-    issuerApiForEncryptedPayload = new IssuerApi(setupForEncryptedPayload(apiConfiguration));
     issuerApiForNonEncryptedPayload = new IssuerApi(setupForNonEncryptedPayload(apiConfiguration));
-  }
-
-  private ApiClient setupForEncryptedPayload(ApiConfiguration apiConfiguration) throws ServiceException {
-    OkHttpClient client = new OkHttpClient().newBuilder().
-      addInterceptor(
-        new OkHttpFieldLevelEncryptionInterceptor(
-          EncryptionHelper.encryptionConfig(apiConfiguration.getEncryptionKeyFile()))).
-      addInterceptor(
-        new OkHttpOAuth1Interceptor(apiConfiguration.getConsumerKey(), apiConfiguration.getSigningKey()))
-      .build();
-
-    return new ApiClient().setHttpClient(client).setBasePath(apiConfiguration.getBasePath());
   }
 
   private ApiClient setupForNonEncryptedPayload(ApiConfiguration apiConfiguration) {
@@ -86,20 +68,6 @@ public class IssuerServiceImpl implements IssuerService {
     }
 
     return aggregateCarbonScore;
-  }
-
-  @Override
-  public UserReference userRegistration(UserProfile userProfile) throws ServiceException {
-    UserReference userReference;
-    try {
-      userReference = issuerApiForEncryptedPayload.userRegistration(userProfile);
-    } catch (ApiException e) {
-      log.error("Exception occurred while registering new user {}", e.getResponseBody());
-
-      throw new ServiceException(e.getMessage(), deserializeErrors(e.getResponseBody()));
-    }
-
-    return userReference;
   }
 
   @Override
