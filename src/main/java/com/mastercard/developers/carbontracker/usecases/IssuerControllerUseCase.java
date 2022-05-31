@@ -39,7 +39,7 @@ public class IssuerControllerUseCase {
     @Value("${binRange}")
     private String binRange;
 
-    @Value("${lang}")
+    @Value("${lang:en}")
     private String lang;
 
     @Autowired

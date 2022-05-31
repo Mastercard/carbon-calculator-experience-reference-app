@@ -1,161 +1,196 @@
 openapi: 3.0.3
 info:
   title: Carbon Calculator Experience API
-  description: |
-    OpenAPI document for Carbon Calculator Experience Service. This API allows issuers to enrol their customers onto Carbon Calculator Experience platform so that they can get carbon footprint for their transactions and offset the same by donating for planting tree.
+  description: >
+    OpenAPI specifications for the Carbon Calculator Experience API. This API
+    allows Issuers to enroll their customers to the Carbon Calculator Experience
+    platform so that they can get a carbon footprint for their transactions and
+    provides them with an option to donate towards tree plantations
 
-    In addition, this API also allows issuers to retrieve carbon footprint aggregate data for their customers.
+
+    In addition, this API also allows Issuers to retrieve carbon footprint
+    aggregate data for their customers.
       <br/>
     ---
-    * **All requests must be signed using OAuth 1.0a. Please refer to [Access Mastercard APIs](https://developer.mastercard.com/platform/documentation/using-oauth-1a-to-access-mastercard-apis/).**
-    ---
-    * **The issuer must provide their user's card details and email address while enrolment. These details must be encrypted before entering transit. Please refer to the [Payload Encryption](https://developer.mastercard.com/platform/documentation/security-and-authentication/securing-sensitive-data-using-payload-encryption/).**
+
+    * **All requests must be signed using OAuth 1.0a. Refer to the [Access
+    Mastercard
+    APIs](https://developer.mastercard.com/platform/documentation/using-oauth-1a-to-access-mastercard-apis/).**
+
     ---
 
+    * **The Issuer must provide their user's card details and email address
+    while enrollment. These details must be encrypted before entering transit.
+    Refer to the [Payload
+    Encryption](https://developer.mastercard.com/platform/documentation/security-and-authentication/securing-sensitive-data-using-payload-encryption/).**
+
+    ---
   contact:
     name: API Support
-    url: https://developer.mastercard.com/
+    url: 'https://developer.mastercard.com/support'
     email: apisupport@mastercard.com
-  version: '1.0.0'
+  version: 1.0.0
 servers:
-  - url: https://api.mastercard.com/cts
+  - url: 'https://api.mastercard.com/cts'
     description: Production
-  - url: https://sandbox.api.mastercard.com/cts
+  - url: 'https://sandbox.api.mastercard.com/cts'
     description: Sandbox
 tags:
   - name: Issuer
     description: Contains APIs which will be consumed by the Issuer's backend system.
-
-
 paths:
   /issuers:
     get:
       tags:
         - Issuer
-      summary: Used to get the issuer details.
-      description: Allows to get issuer details onboarded on Carbon Calculator Experience.
+      summary: Fetches the Issuer details.
+      description: >-
+        Allows fetching the Issuer details onboarded on the Carbon Calculator
+        Experience.
       operationId: getIssuer
       responses:
-        "200":
+        '200':
           $ref: '#/components/responses/IssuerProfileDetails'
-        "404":
-          $ref: '#/components/responses/IssuerNotFoundError'
-        "401":
+        '401':
           $ref: '#/components/responses/IssuerUnauthorisedError'
+        '404':
+          $ref: '#/components/responses/IssuerNotFoundError'
     put:
       tags:
         - Issuer
-      summary: Allows issuer to update their nformation onto Carbon Calculator Expereince Service.
-      description: Allows a registered issuer to update their configuration onto Carbon Calculator Expereince Service.
+      summary: >-
+        Allows Issuer to update the Issuer details to the Carbon Calculator
+        Experience platform.
+      description: >-
+        Allows a registered Issuer to update the configuration details to the
+        Carbon Calculator Experience API.
       operationId: updateIssuer
       requestBody:
         $ref: '#/components/requestBodies/IssuerConfiguration'
       responses:
-        "200":
+        '200':
           $ref: '#/components/responses/IssuerProfile'
-        "400":
+        '400':
           $ref: '#/components/responses/UpdateIssuerBadRequestError'
-        "401":
+        '401':
           $ref: '#/components/responses/UpdateIssuerUnauthorisedError'
-        "404":
+        '404':
           $ref: '#/components/responses/IssuerNotFoundError'
-        "415":
+        '415':
           $ref: '#/components/responses/UnsupportedMediaTypeError'
   /issuers/users:
     post:
       tags:
         - Issuer
-      summary: Allows issuer to enrol their customers onto Carbon Calculator Experience platform.
-      description: Used to enrol users for Carbon Calculator Experience so that they can track the carbon usage for their transactions and offset the same by donating for planting tree.
+      summary: >-
+        Allows Issuer to enroll their customers to the Carbon Calculator
+        Experience platform.
+      description: >-
+        Used to enroll users for the Carbon Calculator Experience API so that
+        they can track the carbon usage for their transactions and and provides
+        them with an option to donate towards tree plantations.
       operationId: userRegistration
       x-mastercard-api-encrypted: true
       requestBody:
         $ref: '#/components/requestBodies/UserProfile'
       responses:
-        "200":
+        '200':
           $ref: '#/components/responses/UserReference'
-        "400":
+        '400':
           $ref: '#/components/responses/UserEnrolmentBadRequestError'
-        "401":
+        '401':
           $ref: '#/components/responses/UserEnrolmentUnauthorisedError'
-        "404":
+        '404':
           $ref: '#/components/responses/IssuerNotFoundError'
-        "415":
+        '415':
           $ref: '#/components/responses/UnsupportedMediaTypeError'
-
-  /issuers/users/{userid}/dashboards:
+  '/issuers/users/{userid}/dashboards':
     get:
       tags:
         - Issuer
-      summary: Used to retrieve Short-Lived URL of user's dashboard to view their carbon footprints and contributions to Priceless Planet.
-      description: Allows the issuer to retrieve a Short-Lived URL for the enrolled user. The API response is encrypted and the issuer needs to decrypt the response using Mastercard client encryption key. The decrypted text contains the Short-Lived URL that expires after 15 mins. Use this URL to render the Carbon Calculator Experience on a WebView.
+      summary: >-
+        Used to retrieve the Short-Lived URL of users' dashboard to view their
+        carbon footprints and contributions to Priceless Planet.
+      description: >-
+        Allows the issuer to retrieve a Short-Lived URL for the enrolled user. The API response is encrypted and the issuer needs to decrypt the response using Mastercard client encryption key. The decrypted text contains the Short-Lived URL that expires after 15 mins. Use this URL to render the Carbon Calculator Experience on a WebView.
       operationId: getAuthToken
       parameters:
         - $ref: '#/components/parameters/UserID'
         - $ref: '#/components/parameters/Lang'
       responses:
-        "200":
+        '200':
           $ref: '#/components/responses/Dashboard'
-        "401":
-          $ref: '#/components/responses/DashboardsUnauthorisedError'
-        "400":
+        '400':
           $ref: '#/components/responses/DashboardBadRequestError'
-        "404":
+        '401':
+          $ref: '#/components/responses/DashboardsUnauthorisedError'
+        '404':
           $ref: '#/components/responses/DashboardNotFoundError'
-
-  /issuers/users/{userid}/aggregate-carbon-scores:
+  '/issuers/users/{userid}/aggregate-carbon-scores':
     get:
       tags:
         - Issuer
-      summary: Fetches monthly aggregate carbon score for the transactions.
-      description: Allows issuers to retrieve an aggregate carbon footprint for the transactions done by a user.
+      summary: >-
+        Fetches monthly aggregate carbon score for the transactions made for the
+        current month.
+      description: >-
+        Allows Issuers to retrieve an aggregate carbon footprint for the
+        transactions done by a user.
       operationId: getAggregateCarbonScore
       parameters:
         - $ref: '#/components/parameters/UserID'
       responses:
-        "200":
+        '200':
           $ref: '#/components/responses/AggregateCarbonScore'
-        "400":
+        '400':
           $ref: '#/components/responses/AggregateCarbonScoreBadRequestError'
-        "401":
+        '401':
           $ref: '#/components/responses/AggregateCarbonScoreUnauthorisedError'
-        "404":
+        '404':
           $ref: '#/components/responses/AggregateCarbonScoreNotFoundError'
-
   /issuers/user-deletions:
     post:
       tags:
         - Issuer
-      summary: Delete one or more users
-      description: Allows a registered Service Provider to delete one or more users. Payment cards associated user will also be deleted.
-        On successful response from server, a Service Provider should remove all the requested users and associated payment cards from its system.
-
+      summary: Delete one or more users.
+      description: >-
+        <ul><li>Allows a registered Service Provider to delete one or more
+        users.</li> <li>Payment cards associated with the user will also be
+        deleted.</li> <li>On the successful response from the Server, a Service
+        Provider should remove all the requested users and associated payment
+        cards from its system.</li></ul>
       operationId: deleteUsers
       requestBody:
         $ref: '#/components/requestBodies/UserIDs'
       responses:
-        "202":
+        '202':
           $ref: '#/components/responses/UserIDs'
-        "400":
+        '400':
           $ref: '#/components/responses/DeleteUserBadRequestError'
-        "401":
+        '401':
           $ref: '#/components/responses/DeleteUserUnauthorisedError'
-        "404":
+        '404':
           $ref: '#/components/responses/DeleteUserNotFoundError'
-        "415":
+        '415':
           $ref: '#/components/responses/UnsupportedMediaTypeError'
-
 components:
   requestBodies:
     UserProfile:
-      description: User's Personal and Card information which needs to be registered onto Carbon Calculator Experience platform. This endpoint uses Mastercard payload encryption. Please refer to the **[Payload Encryption](https://mstr.cd/2UPfda0)** page for implementation details.
+      description: >-
+        User's Personal and Card information which needs to be registered to the
+        Carbon Calculator Experience API. This endpoint uses Mastercard payload
+        encryption. Refer to the **[Payload
+        Encryption](https://developer.mastercard.com/platform/documentation/security-and-authentication/securing-sensitive-data-using-payload-encryption/#mastercard-encryption)**
+        page for implementation details.
       required: true
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/UserProfile'
     IssuerConfiguration:
-      description: Configuration details for issuer which needs to be update. It should contain only those parameters which you want to update.
+      description: >-
+        Configuration details for Issuer which needs to be updated. It should
+        contain only those parameters which you want to update.
       required: true
       content:
         application/json:
@@ -172,16 +207,17 @@ components:
               $ref: '#/components/schemas/UserID'
             minItems: 1
             maxItems: 500
+          examples:
+            UserIDs:
+              $ref: '#/components/examples/UserIDs'
   schemas:
     IssuerProfileDetails:
       title: IssuerProfile
       type: object
-      description: Information about an issuer as available on the server.
+      description: Information about an Issuer as available on the server.
       required:
         - clientId
-        - issuerName
         - supportedAccountRange
-        - callbackUrl
         - status
         - email
         - currencyCode
@@ -195,45 +231,47 @@ components:
           type: string
           minLength: 1
           maxLength: 200
-          pattern: ^[\w\d\-\_]{1,200}
-          description: Unique issuer identifier from the Mastercard Developer Portal.
-          example: 'fjl2fxzsYl1OpvxkBItC9nVw1PSQc_b-eQMcmQFg011ab4b5'
+          pattern: '^[\w\d\-\_]{1,200}'
+          description: Unique Issuer identifier from the Mastercard Developers.
+          example: fjl2fxzsYl1OpvxkBItC9nVw1PSQc_b-eQMcmQFg011ab4b5
         customerId:
           type: string
           minLength: 1
           maxLength: 200
-          pattern: ^[\w\d]{1,200}
-          description: Unique issuer identifier assigned by Mastercard which remains same across all Mastercard systems.
-          example: 'customerid1'
+          pattern: '^[\w\d]{1,200}'
+          description: >-
+            Unique Issuer identifier assigned by Mastercard which remains same
+            across all Mastercard systems.
+          example: customerid1
         supportedAccountRange:
           type: string
-          pattern: ^[0-9]{4,8}(,[0-9]{4,8})*$
-          description: Comma separated account range must be between 4 and 8 supported by an issuer.
-          example: '534403, 518145, 518152, 5403, 5424'
-        callbackUrl:
-          type: string
-          minLength: 0
-          maxLength: 2083
-          description: A service URL which has been made available by an issuer so that it can receive latest transaction score information from server.
-          example: ''
+          pattern: '^[0-9]{4,8}(,[0-9]{4,8})*$'
+          description: >-
+            Comma separated account range must be between 4 and 8 supported by
+            an Issuer.
+          example: '534403,518145,518152,5403,5424'
         status:
           type: string
           minLength: 6
           maxLength: 9
-          description: Status of an issuer on the server. Possible values are ACTIVE & SUSPENDED.
-          example: 'ACTIVE'
+          description: >-
+            Status of an Issuer on the server. Possible values are Active and
+            Suspended.
+          example: ACTIVE
         email:
           type: string
           minLength: 1
-          maxLength: 10
+          maxLength: 100
           description: Issuers email address
-          example: 'xyz@abc.com'
+          example: xyz@abc.com
         currencyCode:
           $ref: '#/components/schemas/CurrencyCode'
         countryCode:
           title: countryCode
           type: string
-          description: DE 19 (Acquiring Institution Country Code) is the code of the country where the acquiring institution is located.
+          description: >-
+            DE 19 (Acquiring Institution Country Code) is the code of the
+            country where the acquiring institution is located.
           maxLength: 3
           minLength: 3
           example: USA
@@ -241,20 +279,22 @@ components:
           $ref: '#/components/schemas/CountryName'
         privacyNoticeURL:
           type: string
-          example: "https://www.issuer.privacy-policy-url.html"
-          description: Privacy notice url.
+          example: 'https://www.issuer.privacy-policy-url.html'
+          description: Privacy notice URL.
         termsAndConditionURL:
           type: string
-          example: "https://www.issuer.term-and-conditions.html"
-          description: Terms and condition urk for the given user.
+          example: 'https://www.issuer.term-and-conditions.html'
+          description: Terms and condition URL for the given user.
         optOutURL:
           type: string
-          example: "https://www.issuer.opt-out-url.html"
-          description: Opt out url for the given user.
+          example: 'https://www.issuer.opt-out-url.html'
+          description: OPT out URL for the given user.
     UserProfile:
       title: UserProfile
       type: object
-      description: The request object for enrolling a new user onto Carbon Calculator Expereince Service.
+      description: >-
+        The request object for enrolling a new user to Carbon Calculator
+        Experience API.
       required:
         - cardNumber
         - billingAddress
@@ -285,7 +325,7 @@ components:
           $ref: '#/components/schemas/Address'
         locale:
           type: string
-          description: User locale which is registered with issuer.
+          description: User locale which is registered with Issuer.
           minLength: 1
           maxLength: 100
           example: en-US
@@ -295,26 +335,25 @@ components:
       description: Currency code as per ISO 4217
       pattern: '^[A-Za-z]{3}$'
       example: EUR
-
     CardExpiry:
       type: object
       properties:
         month:
           type: string
-          example: 10
+          example: '10'
           description: Denotes a month by when the card will be expired.
           pattern: '^[0-9]{2}$'
         year:
           type: string
           description: Denotes a year by when the card will be expired.
-          example: 2024
+          example: '2024'
           pattern: '^[0-9]{4}$'
       title: CardExpiry
     CardNumber:
       type: string
       pattern: '^\d{16}$'
       description: Original payment card number in full.
-      example: 5344035171229750
+      example: '5344035171224363'
     Address:
       type: object
       required:
@@ -330,15 +369,15 @@ components:
           minLength: 1
           maxLength: 10
         locality:
-          description: The city, district, suburb, town or village of the address.
+          description: 'The city, district, suburb, town or village of the address.'
           type: string
           minLength: 1
           maxLength: 100
           example: Rly Station
         postalCode:
-          description: The address postal code, which is the zip code or equivalent.
+          description: 'The address postal code, which is the zip code or equivalent.'
           type: string
-          example: 11746
+          example: '11746'
           minLength: 1
           maxLength: 10
         region:
@@ -356,7 +395,7 @@ components:
         type:
           type: string
           description: Denotes type of address. (e.g. home or work)
-          example: 'work'
+          example: work
           minLength: 1
           maxLength: 100
       title: Address
@@ -398,45 +437,43 @@ components:
     IssuerProfile:
       title: IssuerProfile
       type: object
-      description: Information about an issuer as available on the server.
+      description: Information about an Issuer as available on the server.
       required:
         - clientId
-        - issuerName
         - supportedAccountRange
-        - callbackUrl
         - status
       properties:
         clientId:
           type: string
           minLength: 1
           maxLength: 200
-          pattern: ^[\w\d\-\_]{1,200}
-          description: Unique issuer identifier from the Mastercard Developer Portal.
-          example: 'fjl2fxzsYl1OpvxkBItC9nVw1PSQc_b-eQMcmQFg011ab4b5'
+          pattern: '^[\w\d\-\_]{1,200}'
+          description: Unique Issuer identifier from the Mastercard Developer Portal.
+          example: fjl2fxzsYl1OpvxkBItC9nVw1PSQc_b-eQMcmQFg011ab4b5
         customerId:
           type: string
           minLength: 1
           maxLength: 200
-          pattern: ^[\w\d]{1,200}
-          description: Unique issuer identifier assigned by Mastercard which remains same across all Mastercard systems.
-          example: 'customerid1'
+          pattern: '^[\w\d]{1,200}'
+          description: >-
+            Unique Issuer identifier assigned by Mastercard which remains same
+            across all Mastercard systems.
+          example: customerid1
         supportedAccountRange:
           type: string
-          pattern: ^[0-9]{4,8}(,[0-9]{4,8})*$
-          description: Comma separated account range must be between 4 and 8 supported by an issuer.
-          example: '534403, 518145, 518152, 5403, 5424'
-        callbackUrl:
-          type: string
-          minLength: 0
-          maxLength: 2083
-          description: A service URL which has been made available by an issuer so that it can receive latest transaction score information from server.
-          example: ''
+          pattern: '^[0-9]{4,8}(,[0-9]{4,8})*$'
+          description: >-
+            Comma separated account range must be between 4 and 8 supported by
+            an Issuer.
+          example: '534403,518145,518152,5403,5424'
         status:
           type: string
           minLength: 6
           maxLength: 9
-          description: Status of an issuer on the server. Possible values are ACTIVE & SUSPENDED.
-          example: 'ACTIVE'
+          description: >-
+            Status of an Issuer on the server. Possible values are Active and
+            Suspended.
+          example: ACTIVE
     IssuerConfiguration:
       title: IssuerConfiguration
       type: object
@@ -444,27 +481,22 @@ components:
       properties:
         supportedAccountRange:
           type: string
-          pattern: ^[0-9]{4,8}(,[0-9]{4,8})*$
-          description: Comma separated account range must be between 4 and 8 supported by an issuer.
-          example: '534403, 518145, 518152, 5403, 5424'
-        callbackUrl:
-          type: string
-          minLength: 0
-          maxLength: 2083
-          description: A service URL that can receive transaction score information from Mastercard in near real-time.
-          example: 'https://www.abcbank.com/payment-cards/notify-transaction-footprints'
-
+          pattern: '^[0-9]{4,8}(,[0-9]{4,8})*$'
+          description: >-
+            Comma separated account range must be between 4 and 8 supported by
+            an Issuer.
+          example: '534403,518145,518152,5403,5424'
     CountryName:
       type: string
       description: ISO 3166 country short name
-      pattern: ^[a-zA-Z\s\\(\\),\\.]+$
+      pattern: '^[a-zA-Z\s\\(\\),\\.]+$'
       minLength: 3
       maxLength: 50
       example: Brazil
     UserReference:
       title: UserReference
       type: object
-      description: Successful user enrolment response
+      description: Successful user enrollment response
       required:
         - cardNumberLastFourDigits
         - status
@@ -477,20 +509,26 @@ components:
           minLength: 4
           maxLength: 4
           pattern: '^\d{4}$'
-          description: Last 4 digits of a full payment card number which was provided as enrolment request.
-          example: 4363
+          description: >-
+            Last 4 digits of a full payment card number which was provided as
+            enrollment request.
+          example: '4363'
         status:
           type: string
           minLength: 6
           maxLength: 7
-          description: Status of a Payment Card on Carbon Calculator Experience platform. Possible values are ACTIVE &amp; DELETED.
+          description: >-
+            Status of a Payment Card on Carbon Calculator Experience API.
+            Possible values are Active and Deleted.
           example: ACTIVE
     UserID:
       type: string
       minLength: 36
       maxLength: 36
       pattern: '^[0-9A-Fa-f-]{36}'
-      description: Unique identifier for a user enrolled into Carbon Calculator Experience platform.
+      description: >-
+        Unique identifier for a user enrolled into Carbon Calculator Experience
+        platform.
       example: f5d88571-ac15-465a-a0d8-1ad1327b9a06
     Lang:
       type: string
@@ -507,7 +545,8 @@ components:
           description: This is the URL which needs to be rendered in web view.
           minLength: 1
           maxLength: 5000
-          example: https://ppctwebview.b221.net/home/?auth_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c&lang=en
+          example: >-
+            https://ppctwebview.b221.net/home/?auth_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c&lang=en
         expiryInMillis:
           type: string
           description: Denotes expiry limit for the URL.
@@ -532,11 +571,10 @@ components:
           minLength: 1
           maxLength: 20
           example: november-2020
-
     ErrorWrapper:
       title: ErrorWrapper
       type: object
-      description: The error response object which gets returned in case of any error.
+      description: The error response object gets returned in case of error.
       required:
         - Errors
       properties:
@@ -545,7 +583,7 @@ components:
     Errors:
       title: Errors
       type: object
-      description: Error object which contains list of Error objects.
+      description: Error object which contains list of error objects.
       required:
         - Error
       properties:
@@ -565,38 +603,52 @@ components:
       properties:
         Source:
           type: string
-          description: The application name that generated this error. If an error is generated and returned by the gateway, then this field will have value as `Gateway`. Other possible values are `CARBON CALCULATOR`, `DONATE`, `CARBON_CALCULATOR_EXPERIENCE` or `PRICELESS PLANET`.
+          description: >-
+            The application name that generated this error. If an error is
+            generated and returned by the gateway, then this field will have
+            value as `Gateway`. Other possible values are `CARBON CALCULATOR`,
+            `DONATE`, `CARBON_CALCULATOR_EXPERIENCE` or `PRICELESS PLANET`.
           minLength: 1
           maxLength: 100
-          example: 'CARBON_CALCULATOR_EXPERIENCE'
+          example: CARBON_CALCULATOR_EXPERIENCE
         ReasonCode:
           type: string
-          description: A unique constant identifying the error case encountered during request processing.
+          description: >-
+            A unique constant identifying the error case encountered during
+            request processing.
           minLength: 1
           maxLength: 100
-          example: 'INVALID_REQUEST_PARAMETER'
+          example: INVALID_REQUEST_PARAMETER
         Description:
           type: string
           description: Short description of the `ReasonCode` field.
           minLength: 10
           maxLength: 1000
-          example: One of the request parameters is invalid, try again with correct request.
+          example: >-
+            One of the request parameters is invalid, try again with correct
+            request.
         Recoverable:
           type: boolean
-          description: Indicates whether this error will always be returned for this request, or retrying could change the outcome.
+          description: >-
+            Indicates whether this error will always be returned for this
+            request, or retrying could change the outcome.
           example: false
         Details:
           type: string
-          description: (Optional) Where appropriate, indicates detailed information about data received and calculated during request processing, to help the user with diagnosing errors.
+          description: >-
+            (Optional) Where appropriate, indicates detailed information about
+            data received and calculated during the request processing, to help
+            the user with diagnosing errors.
           minLength: 0
           maxLength: 5000
           example: email must not be null.
-
   parameters:
     UserID:
       in: path
       name: userid
-      description: Unique identifier for a user enrolled into Carbon Calculator Experience platform.
+      description: >-
+        Unique identifier for a user enrolled into Carbon Calculator Experience
+        platform.
       required: true
       example: f5d88571-ac15-465a-a0d8-1ad1327b9a06
       schema:
@@ -611,24 +663,28 @@ components:
         $ref: '#/components/schemas/Lang'
   responses:
     Dashboard:
-      description: The response object contains Short-Live URL along with authentication token.
+      description: >-
+        The response object contains Short-Live URL along with authentication
+        token.
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/Dashboard'
     IssuerProfile:
-      description: 'The response object that contains latest information of an issuer as available on server.'
+      description: >-
+        The response object that contains latest information of an Issuer as
+        available on server.
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/IssuerProfile'
           examples:
-            IssuerWithCallbackUrl:
-              $ref: '#/components/examples/IssuerWithCallbackUrl'
-            IssuerWithoutCallbackUrl:
-              $ref: '#/components/examples/IssuerWithoutCallbackUrl'
+            UpdateIssuerDetails:
+              $ref: '#/components/examples/UpdateIssuerDetails'
     IssuerProfileDetails:
-      description: 'The response object that contains latest information of an issuer as available on server.'
+      description: >-
+        The response object contains the latest information of an Issuer as
+        available on the server.
       content:
         application/json:
           schema:
@@ -637,13 +693,15 @@ components:
             IssuerDetails:
               $ref: '#/components/examples/IssuerDetails'
     UserReference:
-      description: The response object that contains Payment Card information after successful registration.
+      description: >-
+        The response object that contains Payment Card information after
+        successful registration.
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/UserReference'
     AggregateCarbonScore:
-      description: The response object contains aggregation of carbon footprint.
+      description: The response object contains an aggregation of carbon footprint.
       content:
         application/json:
           schema:
@@ -652,7 +710,7 @@ components:
             AggregateCarbonScores:
               $ref: '#/components/examples/AggregateCarbonScore'
     UserIDs:
-      description: The response object contains list user ids
+      description: The response object contains a list of deleted user IDs
       content:
         application/json:
           schema:
@@ -662,10 +720,10 @@ components:
           examples:
             DeletedUserIds:
               $ref: '#/components/examples/UserIDs'
-
-
     UserEnrolmentBadRequestError:
-      description: This response code is returned when a request is invalid or data in the request is not valid or a card/user is already registered on the server.
+      description: >-
+        This response code is returned when a request is invalid or data in the
+        request is not valid or a card user is already registered on the server.
       content:
         application/json:
           schema:
@@ -685,10 +743,8 @@ components:
               $ref: '#/components/examples/EncryptedDataLengthError'
             RequestDecryptionError:
               $ref: '#/components/examples/RequestDecryptionError'
-
-
     IssuerUnauthorisedError:
-      description: This response code is returned when a user and issuer is unauthorized.
+      description: This response code is returned when a user and Issuer is unauthorized.
       content:
         application/json:
           schema:
@@ -696,14 +752,12 @@ components:
           examples:
             IssuerInactiveError:
               $ref: '#/components/examples/IssuerInactiveError'
-
             IssuerSuspendedError:
               $ref: '#/components/examples/IssuerSuspendedError'
-
             IssuerTerminatedError:
               $ref: '#/components/examples/IssuerTerminatedError'
     UserEnrolmentUnauthorisedError:
-      description: This response code is returned for unauthorized isuuer.
+      description: This response code is returned for unauthorized Issuer.
       content:
         application/json:
           schema:
@@ -716,7 +770,9 @@ components:
             IssuerTerminatedError:
               $ref: '#/components/examples/IssuerTerminatedError'
     UpdateIssuerBadRequestError:
-      description: This response code is returned when either a request is invalid or data provided in the request is in invalid format.
+      description: >-
+        This response code is returned when either a request is invalid or data
+        provided in the request is in invalid format.
       content:
         application/json:
           schema:
@@ -726,10 +782,8 @@ components:
               $ref: '#/components/examples/IssuerEmptyRequestBodyError'
             IssuerInvalidAccountRangeLengthError:
               $ref: '#/components/examples/IssuerInvalidAccountRangeLengthError'
-
-
     DashboardsUnauthorisedError:
-      description: This response code is returned when a user and issuer is unauthorized.
+      description: This response code is returned when a user and Issuer is unauthorized.
       content:
         application/json:
           schema:
@@ -746,7 +800,7 @@ components:
             IssuerTerminatedError:
               $ref: '#/components/examples/IssuerTerminatedError'
     UpdateIssuerUnauthorisedError:
-      description: This response code is returned for unauthorized isuuer.
+      description: This response code is returned for unauthorized Issuer.
       content:
         application/json:
           schema:
@@ -759,7 +813,7 @@ components:
             IssuerTerminatedError:
               $ref: '#/components/examples/IssuerTerminatedError'
     DashboardNotFoundError:
-      description: This response code is returned when a user or issuer is not present.
+      description: This response code is returned when a user or Issuer is not present.
       content:
         application/json:
           schema:
@@ -770,7 +824,7 @@ components:
             IssuerNotFoundError:
               $ref: '#/components/examples/IssuerNotFoundError'
     AggregateCarbonScoreUnauthorisedError:
-      description: This response code is returned when a user terminated or in active.
+      description: This response code is returned when a user terminated or inactive.
       content:
         application/json:
           schema:
@@ -787,7 +841,7 @@ components:
             IssuerTerminatedError:
               $ref: '#/components/examples/IssuerTerminatedError'
     AggregateCarbonScoreNotFoundError:
-      description: This response code is returned when a user or issuer is not present.
+      description: This response code is returned when a user or Issuer is not present.
       content:
         application/json:
           schema:
@@ -798,7 +852,7 @@ components:
             IssuerNotFoundError:
               $ref: '#/components/examples/IssuerNotFoundError'
     DeleteUserUnauthorisedError:
-      description: This response code is returned when a user terminated or in active.
+      description: This response code is returned when a user terminated or inactive.
       content:
         application/json:
           schema:
@@ -811,7 +865,7 @@ components:
             IssuerTerminatedError:
               $ref: '#/components/examples/IssuerTerminatedError'
     DeleteUserNotFoundError:
-      description: This response code is returned when a user or issuer is not present.
+      description: This response code is returned when a user or Issuer is not present.
       content:
         application/json:
           schema:
@@ -820,7 +874,9 @@ components:
             IssuerNotFoundError:
               $ref: '#/components/examples/IssuerNotFoundError'
     DashboardBadRequestError:
-      description: This response code is returned when a request is invalid or data in the request is not valid.
+      description: >-
+        This response code is returned when a request is invalid or data in the
+        request is not valid.
       content:
         application/json:
           schema:
@@ -829,7 +885,9 @@ components:
             InvalidUserIdError:
               $ref: '#/components/examples/InvalidUserIdError'
     AggregateCarbonScoreBadRequestError:
-      description: This response code is returned when a request is invalid or data in the request is not valid.
+      description: >-
+        This response code is returned when a request is invalid or data in the
+        request is not valid.
       content:
         application/json:
           schema:
@@ -837,9 +895,10 @@ components:
           examples:
             InvalidUserIdError:
               $ref: '#/components/examples/InvalidUserIdError'
-
     IssuerNotFoundError:
-      description: This response code is returned when server cannot find the account which has been used to call this API.
+      description: >-
+        This response code is returned when the server cannot find the account
+        which has been used to call the API.
       content:
         application/json:
           schema:
@@ -848,7 +907,9 @@ components:
             IssuerNotFoundError:
               $ref: '#/components/examples/IssuerNotFoundError'
     UnsupportedMediaTypeError:
-      description: This response code is returned when the MediaType in request is other than application/json.
+      description: >-
+        This response code is returned when the MediaType in request is other
+        than application/json.
       content:
         application/json:
           schema:
@@ -857,7 +918,9 @@ components:
             UnsupportedMediaTypeError:
               $ref: '#/components/examples/UnsupportedMediaTypeError'
     DeleteUserBadRequestError:
-      description: This response code is returned when a request is invalid or data in the request is not valid.
+      description: >-
+        This response code is returned when a request is invalid or data in the
+        request is not valid.
       content:
         application/json:
           schema:
@@ -867,43 +930,32 @@ components:
               $ref: '#/components/examples/UserCountError'
             InvalidUserIdLengthError:
               $ref: '#/components/examples/InvalidUserIdLengthError'
-
   examples:
     UserIDs:
-      value: [ "4ba581a55-bcea-4c3e-8e0f-9b4726e5e6d3",
-               "c5d88571-ac15-465a-a0d8-1ad1327b9a06" ]
-    IssuerWithoutCallbackUrl:
+      value:
+        - 4ba581a55-bcea-4c3e-8e0f-9b4726e5e6d3
+        - c5d88571-ac15-465a-a0d8-1ad1327b9a06
+    UpdateIssuerDetails:
       value:
         clientId: 'fjl2fxzsYl1OpvxkBItC9nVw1PSQc_b-eQMcmQFg011ab4b5'
         customerId: '12345'
 
         supportedAccountRange: '534403, 518145, 518152, 5403, 5424'
-        callbackUrl: ''
         status: 'ACTIVE'
-    IssuerWithCallbackUrl:
-      value:
-        clientId: 'fjl2fxzsYl1OpvxkBItC9nVw1PSQc_b-eQMcmQFg011ab4b5'
-        customerId: '12345'
-
-        supportedAccountRange: '534403, 518145, 518152, 5403, 5424'
-        callbackUrl: 'https://www.abcbank.com/payment-cards/notify-transaction-footprints'
-        status: 'ACTIVE'
-
     AggregateCarbonScore:
       value:
         carbonEmissionInGrams: 32.45
         aggregateDate: november-2020
     IssuerDetails:
       value:
-        clientId: 'fjl2fxzsYl1OpvxkBItC9nVw1PSQc_b-eQMcmQFg011ab4b5'
-        customerId: ''
-        issuerName: 'ABC Bank'
+        clientId: fjl2fxzsYl1OpvxkBItC9nVw1PSQc_b-eQMcmQFg011ab4b5
+        customerId: '45678'
+        issuerName: ABC Bank
         supportedAccountRange: '534403, 518145, 518152, 5403, 5424'
-        callbackUrl: 'https://www.abcbank.com/payment-cards/notify-transaction-footprints'
-        status: 'ACTIVE'
-        email: 'xyz@abc.com'
-        currencyCode: 'USD'
-        countryCode: 'USA'
+        status: ACTIVE
+        email: xyz@abc.com
+        currencyCode: USD
+        countryCode: USA
         termsAndConditionURL: 'https://www.issuer.term-and-conditions.html'
         privacyNoticeURL: 'https://www.issuer.privacy-policy-url.html'
         optOutURL: 'https://www.issuer.opt-out-url.html'
@@ -911,165 +963,218 @@ components:
       value:
         Errors:
           Error:
-            - Source: 'CARBON CALCULATOR EXPERIENCE'
-              ReasonCode: 'USER_NOT_FOUND'
-              Description: 'We cannot find user details for provided userId. Kindly register user through enrolment process.'
+            - Source: CARBON CALCULATOR EXPERIENCE
+              ReasonCode: USER_NOT_FOUND
+              Description: >-
+                We cannot find user details for provided userId. Kindly register
+                the user through the enrollment process.
               Recoverable: false
-              Details: 'Make sure user is enrolled through /issuers/users API endpoint.'
+              Details: Make sure user is enrolled through /issuers/users API endpoint.
     RequestDecryptionError:
       value:
         Errors:
           Error:
-            - Source: 'CARBON CALCULATOR EXPERIENCE'
-              ReasonCode: 'CRYPTO_ERROR'
-              Description: 'We are unable to decipher your request, kindly verify your request before trying again. If the problem persist then reach out to your Mastercard associate.'
+            - Source: CARBON CALCULATOR EXPERIENCE
+              ReasonCode: CRYPTO_ERROR
+              Description: >-
+                We are unable to decipher your request, kindly verify your
+                request before trying again. If the problem persists then reach
+                out to your Mastercard associate.
               Recoverable: false
               Details: ''
     BadRequestError:
       value:
         Errors:
           Error:
-            - Source: 'CARBON CALCULATOR EXPERIENCE'
-              ReasonCode: 'INVALID_REQUEST_PARAMETER'
-              Description: 'One of the request parameters is invalid, try again with correct request.'
+            - Source: CARBON CALCULATOR EXPERIENCE
+              ReasonCode: INVALID_REQUEST_PARAMETER
+              Description: >-
+                One of the request parameters is invalid, try again with correct
+                request.
               Recoverable: false
               Details: 'Email must be in the format: xyz@mail.com'
-
     IssuerEmptyRequestBodyError:
       value:
         Errors:
           Error:
-            - Source: 'Carbon-Calculator'
-              ReasonCode: 'INVALID_REQUEST_PARAMETER'
-              Description: 'One of the request parameters is invalid, try again with correct request.'
+            - Source: Carbon-Calculator
+              ReasonCode: INVALID_REQUEST_PARAMETER
+              Description: >-
+                One of the request parameters is invalid, try again with correct
+                request.
               Recoverable: false
-              Details: 'Required request body is missing'
+              Details: Required request body is missing
     IssuerInvalidAccountRangeLengthError:
       value:
         Errors:
           Error:
-            - Source: 'CARBON CALCULATOR EXPERIENCE'
-              ReasonCode: 'INVALID_REQUEST_PARAMETER'
-              Description: 'One of the request parameters is invalid, try again with correct request.'
+            - Source: CARBON CALCULATOR EXPERIENCE
+              ReasonCode: INVALID_REQUEST_PARAMETER
+              Description: >-
+                One of the request parameters is invalid, try again with correct
+                request.
               Recoverable: false
-              Details: 'Each value in supportedAccountRange must be numeric and size should be between 4 and 8'
-
+              Details: >-
+                Each value in supportedAccountRange must be numeric and size
+                should be between 4 and 8
     EncryptedDataLengthError:
       value:
         Errors:
           Error:
-            - Source: 'CARBON CALCULATOR EXPERIENCE'
-              ReasonCode: 'INVALID_REQUEST_PARAMETER'
-              Description: 'One of the request parameters is invalid, try again with correct request.'
+            - Source: CARBON CALCULATOR EXPERIENCE
+              ReasonCode: INVALID_REQUEST_PARAMETER
+              Description: >-
+                One of the request parameters is invalid, try again with correct
+                request.
               Recoverable: false
-              Details: 'encryptedData size must be between 128 and 54000'
+              Details: encryptedData size must be between 128 and 54000
     IssuerTerminatedError:
       value:
         Errors:
           Error:
-            - Source: 'CARBON CALCULATOR EXPERIENCE'
-              ReasonCode: 'ACCOUNT_TERMINATED'
-              Description: "Your account has been terminated, you won't be able to access any service. Kindly register yourself again."
+            - Source: CARBON CALCULATOR EXPERIENCE
+              ReasonCode: ACCOUNT_TERMINATED
+              Description: >-
+                Your account has been terminated, you won't be able to access
+                any service. Kindly register yourself again.
               Recoverable: false
-              Details: "Your account has been terminated, you won't be able to access any service. Kindly register yourself again."
+              Details: >-
+                Your account has been terminated, you won't be able to access
+                any service. Kindly register yourself again.
     InvalidUserIdError:
       value:
         Errors:
           Error:
-            - Source: 'CARBON CALCULATOR EXPERIENCE'
-              ReasonCode: 'INVALID_REQUEST_PARAMETER'
-              Description: 'One of the request parameters is invalid, try again with correct request.'
+            - Source: CARBON CALCULATOR EXPERIENCE
+              ReasonCode: INVALID_REQUEST_PARAMETER
+              Description: >-
+                One of the request parameters is invalid, try again with correct
+                request.
               Recoverable: false
-              Details: 'UserId should be of size 36'
+              Details: UserId should be of size 36
     UnsupportedMediaTypeError:
       value:
         Errors:
           Error:
-            - Source: 'CARBON CALCULATOR EXPERIENCE'
-              ReasonCode: 'UNSUPPORTED_MEDIA_TYPE'
-              Description: 'Requested media type is not supported, try again with supported media type.'
+            - Source: CARBON CALCULATOR EXPERIENCE
+              ReasonCode: UNSUPPORTED_MEDIA_TYPE
+              Description: >-
+                The requested media type is not supported, try again with
+                supported media type.
               Recoverable: false
               Details: ''
     InvalidCardHolderNameError:
       value:
         Errors:
           Error:
-            - Source: 'CARBON CALCULATOR EXPERIENCE'
-              ReasonCode: 'INVALID_REQUEST_PARAMETER'
-              Description: 'One of the request parameters is invalid, try again with correct request.'
+            - Source: CARBON CALCULATOR EXPERIENCE
+              ReasonCode: INVALID_REQUEST_PARAMETER
+              Description: >-
+                One of the request parameters is invalid, try again with correct
+                request.
               Recoverable: false
-              Details: "CardholderName must only contain alphanumeric (A-Z, a-z, 0-9), whitespace, and the characters ('), (,) and (')"
+              Details: >-
+                CardholderName must only contain alphanumeric (A-Z, a-z, 0-9),
+                whitespace, and the characters ('), (,) and (')
     InvalidUserNameError:
       value:
         Errors:
           Error:
-            - Source: 'CARBON CALCULATOR EXPERIENCE'
-              ReasonCode: 'INVALID_REQUEST_PARAMETER'
-              Description: 'One of the request parameters is invalid, try again with correct request.'
+            - Source: CARBON CALCULATOR EXPERIENCE
+              ReasonCode: INVALID_REQUEST_PARAMETER
+              Description: >-
+                One of the request parameters is invalid, try again with correct
+                request.
               Recoverable: false
-              Details: "Username must only contain alphanumeric (A-Z, a-z, 0-9) and the characters ('), (,) and (')"
-
+              Details: >-
+                Username must only contain alphanumeric (A-Z, a-z, 0-9) and the
+                characters ('), (,) and (')
     UserInactiveError:
       value:
         Errors:
           Error:
-            - Source: 'CARBON CALCULATOR EXPERIENCE'
-              ReasonCode: 'USER_INACTIVE'
-              Description: "User is inactive, kindly contact your Mastercard associate to activate it. Until then you won't be able to access any service."
+            - Source: CARBON CALCULATOR EXPERIENCE
+              ReasonCode: USER_INACTIVE
+              Description: >-
+                User is inactive, kindly contact your Mastercard associate to
+                activate it. Until then you won't be able to access any service.
               Recoverable: false
-              Details: "User is inactive, kindly contact your Mastercard associate to activate it. Until then you won't be able to access any service."
+              Details: >-
+                User is inactive, kindly contact your Mastercard associate to
+                activate it. Until then you won't be able to access any service.
     IssuerInactiveError:
       value:
         Errors:
           Error:
-            - Source: 'CARBON CALCULATOR EXPERIENCE'
-              ReasonCode: 'ACCOUNT_INACTIVE'
-              Description: "Your account is inactive, kindly contact your Mastercard associate to activate it. Until then you won't be able to access any service."
+            - Source: CARBON CALCULATOR EXPERIENCE
+              ReasonCode: ACCOUNT_INACTIVE
+              Description: >-
+                Your account is inactive, kindly contact your Mastercard
+                associate to activate it. Until then you won't be able to access
+                any service.
               Recoverable: false
-              Details: "Your account is inactive, kindly contact your Mastercard associate to activate it. Until then you won't be able to access any service."
+              Details: >-
+                Your account is inactive, kindly contact your Mastercard
+                associate to activate it. Until then you won't be able to access
+                any service.
     IssuerNotFoundError:
       value:
         Errors:
           Error:
-            - Source: 'CARBON CALCULATOR EXPERIENCE'
-              ReasonCode: 'SERVICE_PROVIDER_NOT_FOUND'
-              Description: 'service provider clientId is not Identified'
+            - Source: CARBON CALCULATOR EXPERIENCE
+              ReasonCode: SERVICE_PROVIDER_NOT_FOUND
+              Description: Service provider clientId is not Identified
               Recoverable: false
-              Details: 'Client not found.'
+              Details: Client not found.
     UserCountError:
       value:
         Errors:
           Error:
-            - Source: 'CARBON CALCULATOR EXPERIENCE'
-              ReasonCode: 'INVALID_REQUEST_PARAMETER'
-              Description: 'One of the request parameters is invalid, try again with correct request.'
+            - Source: CARBON CALCULATOR EXPERIENCE
+              ReasonCode: INVALID_REQUEST_PARAMETER
+              Description: >-
+                One of the request parameters is invalid, try again with correct
+                request.
               Recoverable: true
-              Details: 'Request body should have at least 1 or not more than 500 userIds'
+              Details: Request body should have at least 1 or not more than 500 userIds
     InvalidUserIdLengthError:
       value:
         Errors:
           Error:
-            - Source: 'CARBON CALCULATOR EXPERIENCE'
-              ReasonCode: 'INVALID_REQUEST_PARAMETER'
-              Description: 'One of the request parameters is invalid, try again with correct request.'
+            - Source: CARBON CALCULATOR EXPERIENCE
+              ReasonCode: INVALID_REQUEST_PARAMETER
+              Description: >-
+                One of the request parameters is invalid, try again with correct
+                request.
               Recoverable: false
-              Details: "userId must match \"^[0-9A-Fa-f\\-]{36}\""
+              Details: 'userId must match "^[0-9A-Fa-f\-]{36}"'
     IssuerSuspendedError:
       value:
         Errors:
           Error:
-            - Source: 'CARBON CALCULATOR EXPERIENCE'
-              ReasonCode: "ACCOUNT_SUSPENDED"
-              Description: "Your account has been suspended temporarily, kindly contact your Mastercard associate to activate it again. Until then you won't be able to access any service."
+            - Source: CARBON CALCULATOR EXPERIENCE
+              ReasonCode: ACCOUNT_SUSPENDED
+              Description: >-
+                Your account has been suspended temporarily, kindly contact your
+                Mastercard associate to activate it again. Until then you won't
+                be able to access any service.
               Recoverable: false
-              Details: "Your account has been suspended temporarily, kindly contact your Mastercard associate to activate it again. Until then you won't be able to access any service."
+              Details: >-
+                Your account has been suspended temporarily, kindly contact your
+                Mastercard associate to activate it again. Until then you won't
+                be able to access any service.
     UserTerminatedError:
       value:
         Errors:
           Error:
-            - Source: 'CARBON CALCULATOR EXPERIENCE'
-              ReasonCode: 'USER_TERMINATE_IN_PROGRESS'
-              Description: "User termination is in progress, kindly contact your Mastercard associate to activate it again. Until then you won't be able to access any service."
+            - Source: CARBON CALCULATOR EXPERIENCE
+              ReasonCode: USER_TERMINATE_IN_PROGRESS
+              Description: >-
+                User termination is in progress, kindly contact your Mastercard
+                associate to activate it again. Until then you won't be able to
+                access any service.
               Recoverable: false
-              Details: "User termination is in progress, kindly contact your Mastercard associate to activate it again. Until then you won't be able to access any service."
-
+              Details: >-
+                User termination is in progress, kindly contact your Mastercard
+                associate to activate it again. Until then you won't be able to
+                access any service.

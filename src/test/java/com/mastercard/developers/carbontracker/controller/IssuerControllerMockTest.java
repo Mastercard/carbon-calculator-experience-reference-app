@@ -136,7 +136,6 @@ class IssuerControllerMockTest {
     when(issuerService.updateIssuer(any())).thenReturn(new IssuerProfile());
     IssuerConfiguration issuerConfiguration = new IssuerConfiguration();
     final String range = "5050,5051";
-    issuerConfiguration.callbackUrl("https://confluence.mastercard.int/pages/viewpage.action?pageId=508046358aMkhe");
     issuerConfiguration.setSupportedAccountRange(range);
 
     MvcResult mvcResult = mockMvc.perform(put(UPDATE_USER).contentType("application/json").header(X_OPENAPI_CLIENTID, CLIENTID)
@@ -152,7 +151,6 @@ class IssuerControllerMockTest {
   @DisplayName("Test getIssuerDetails")
   void getIssuerDetails() throws Exception {
     IssuerProfileDetails issuerProfileDetails = new IssuerProfileDetails();
-    issuerProfileDetails.setCallbackUrl("http://callbakcUrl");
     issuerProfileDetails.setClientId("clientId");
     issuerProfileDetails.setCurrencyCode("USD");
     issuerProfileDetails.setCountryCode("USA");
