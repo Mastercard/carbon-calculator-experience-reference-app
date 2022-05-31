@@ -15,7 +15,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.openapitools.client.ApiException;
 import org.openapitools.client.api.IssuerApi;
 import org.openapitools.client.model.AggregateCarbonScore;
-import org.openapitools.client.model.Dashboard;
 import org.openapitools.client.model.Error;
 import org.openapitools.client.model.ErrorWrapper;
 import org.openapitools.client.model.Errors;
@@ -54,36 +53,9 @@ class IssuerServiceImplTest {
 
   @BeforeEach
   public void setUp() {
-
-
     apiConfiguration = mock(ApiConfiguration.class);
     issuerService = new IssuerServiceImpl(apiConfiguration);
   }
-
-  @Test
-  void testGetAuthToken() throws Exception {
-
-    issuerApiForNonEncryptedPayload = mock(IssuerApi.class);
-    ReflectionTestUtils.setField(issuerService, "issuerApiForNonEncryptedPayload", issuerApiForNonEncryptedPayload);
-    when(issuerApiForNonEncryptedPayload.getAuthToken(anyString())).thenReturn(new Dashboard());
-    assertNotNull(issuerService.getAuthToken("22222"));
-  }
-
-  @Test
-  @DisplayName("Throws Exception")
-  void testGetAuthTokenThrowsException() throws Exception {
-
-
-    issuerApiForNonEncryptedPayload = mock(IssuerApi.class);
-    ReflectionTestUtils.setField(issuerService, "issuerApiForNonEncryptedPayload", issuerApiForNonEncryptedPayload);
-    ApiException api = new ApiException("ApiException", null, 400, null, gson.toJson(getErrorDetail()));
-
-    when(issuerApiForNonEncryptedPayload.getAuthToken(anyString())).thenThrow(api);
-    Assertions.assertThrows(Exception.class, () -> issuerService.getAuthToken("hdclientId"));
-    log.info("GetAuth Token throws exception completed");
-
-  }
-
 
   @Test
   @DisplayName("getAggregateCarbonScore")

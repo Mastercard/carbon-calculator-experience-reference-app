@@ -50,8 +50,17 @@ public class ApiConfiguration {
   @Value("${mastercard.api.encryption.key-file}")
   private Resource encryptionKeyFile;
 
+  @Value("${mastercard.api.authentication.mc-key-file}")
+  private Resource mcKeyFilePath;
+
   @Value("${mastercard.api.encryption.fingerprint}")
   private String encryptionFingerprint;
+
+  @Value("${mastercard.api.authentication.mc-keystore-alias}")
+  private String mcKeyAlias;
+
+  @Value("${mastercard.api.authentication.mc-keystore-password}")
+  private String mcKeyPassword;
 
   public String getConsumerKey() {
     return consumerKey;
@@ -63,6 +72,26 @@ public class ApiConfiguration {
 
   public Resource getEncryptionKeyFile() {
     return encryptionKeyFile;
+  }
+
+  public Resource getMcKeyFilePath() {
+    return mcKeyFilePath;
+  }
+
+  public String getKeyAlias() {
+    return keyAlias;
+  }
+
+  public String getKeyPassword() {
+    return keyPassword;
+  }
+
+  public String getMcKeyAlias() {
+    return mcKeyAlias;
+  }
+
+  public String getMcKeyPassword() {
+    return mcKeyPassword;
   }
 
   @Bean

@@ -4,11 +4,16 @@ mastercard:
       base-path: https://sandbox.api.mastercard.com/cts # Refers to sandbox endpoint
     authentication:
       key-file: # Copy .p12 file in src/main/resources and set value as classpath:nameOfYourP12File.p12
+      mc-key-file: # Copy mc.p12 file in src/main/resources and set value as classpath:nameOfYourMcP12File.p12
       consumer-key:  # Copy the Consumer key from "Sandbox/Production Keys" section on your project page
       keystore-alias:   # Alias of your key. Default key alias for sandbox is keyalias
       keystore-password:  # Password of your Keystore. Default keystore password for sandbox project is keystorepassword
+      mc-keystore-alias: # Alias of your mastercard key.
+      mc-keystore-password: # Password of your mastercard keystore.
     encryption:
       key-file:  #client-encryption.pem
       fingerprint:  #fingerprint
 
 binRange: #Bin range for the given issuer
+
+lang: #Provide language code in which webview should be rendered. Supported lang "en,es-419,sv". Default is "en".

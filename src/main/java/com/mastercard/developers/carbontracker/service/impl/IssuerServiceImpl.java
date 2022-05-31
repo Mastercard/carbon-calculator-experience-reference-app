@@ -10,7 +10,6 @@ import org.openapitools.client.ApiClient;
 import org.openapitools.client.ApiException;
 import org.openapitools.client.api.IssuerApi;
 import org.openapitools.client.model.AggregateCarbonScore;
-import org.openapitools.client.model.Dashboard;
 import org.openapitools.client.model.IssuerConfiguration;
 import org.openapitools.client.model.IssuerProfile;
 import org.openapitools.client.model.IssuerProfileDetails;
@@ -41,18 +40,6 @@ public class IssuerServiceImpl implements IssuerService {
         new OkHttpOAuth1Interceptor(apiConfiguration.getConsumerKey(), apiConfiguration.getSigningKey())).build();
 
     return new ApiClient().setHttpClient(client).setBasePath(apiConfiguration.getBasePath());
-  }
-
-  @Override
-  public Dashboard getAuthToken(String userPpctId) throws ServiceException {
-    Dashboard dashboard;
-    try {
-      dashboard = issuerApiForNonEncryptedPayload.getAuthToken(userPpctId);
-    } catch (ApiException e) {
-      log.error("Exception occurred while getting dashboard url {}", e.getResponseBody());
-      throw new ServiceException(e.getMessage(), deserializeErrors(e.getResponseBody()));
-    }
-    return dashboard;
   }
 
   @Override

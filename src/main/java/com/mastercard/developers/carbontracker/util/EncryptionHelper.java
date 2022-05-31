@@ -20,7 +20,7 @@ import com.mastercard.developer.encryption.FieldLevelEncryptionConfigBuilder;
 import com.mastercard.developer.utils.EncryptionUtils;
 import com.mastercard.developers.carbontracker.exception.ServiceException;
 import org.springframework.core.io.Resource;
-
+import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
 
 public class EncryptionHelper {
@@ -49,6 +49,36 @@ public class EncryptionHelper {
               .aFieldLevelEncryptionConfig()
               .withEncryptionCertificate(cert)
               .withEncryptionPath("$", "$")
+              .withEncryptedValueFieldName("encryptedData")
+              .withEncryptedKeyFieldName("encryptedKey")
+              .withOaepPaddingDigestAlgorithmFieldName("oaepHashingAlgorithm")
+              .withOaepPaddingDigestAlgorithm("SHA-256")
+              .withEncryptionKeyFingerprintFieldName("publicKeyFingerprint")
+              .withIvFieldName("iv")
+              .withFieldValueEncoding(FieldLevelEncryptionConfig.FieldValueEncoding.HEX)
+              .build();
+    } catch (Exception e) {
+      throw new ServiceException(e);
+    }
+  }
+
+  /**
+   * This method uses mastercard developer library payload decryption
+   * @param keyFile,keyAlias,password P12, keyalias, password
+   * @return FieldLevelEncryptionConfig
+   */
+
+  public static FieldLevelEncryptionConfig decryptionConfig(Resource keyFile, String keyAlias, String password)
+          throws ServiceException {
+    try {
+
+      PrivateKey key = EncryptionUtils.loadDecryptionKey(keyFile.getFile().getAbsolutePath(),
+              keyAlias, password);
+
+      return FieldLevelEncryptionConfigBuilder
+              .aFieldLevelEncryptionConfig()
+              .withDecryptionKey(key)
+              .withDecryptionPath("$", "$")
               .withEncryptedValueFieldName("encryptedData")
               .withEncryptedKeyFieldName("encryptedKey")
               .withOaepPaddingDigestAlgorithmFieldName("oaepHashingAlgorithm")

@@ -59,16 +59,33 @@ FieldLevelEncryptionConfig config = FieldLevelEncryptionConfigBuilder
                     .build();
 ```
 
+### Configuring Response Decryption
+The [Mastercard Encryption Library](https://github.com/Mastercard/client-encryption-java) provides interceptor class that you can use when configuring your API client. This [interceptor](https://github.com/Mastercard/client-encryption-java#decrypting-entire-mastercard-payloads) will decrypt payload received in response.
+
+**Decryption Config**
+```
+FieldLevelEncryptionConfig config = FieldLevelEncryptionConfigBuilder.aFieldLevelEncryptionConfig()
+                    .withDecryptionKey(<<mc.p12>>)
+                    .withDecryptionPath("$", "$")
+                    .withOaepPaddingDigestAlgorithm("SHA-256")
+                    .withEncryptedValueFieldName("encryptedValue")
+                    .withEncryptedKeyFieldName("encryptedKey")
+                    .withIvFieldName("iv")
+                    .withFieldValueEncoding(FieldValueEncoding.HEX)
+                    .build();
+```
+
 See also: 
 - [Securing Sensitive Data Using Payload Encryption](https://developer.mastercard.com/platform/documentation/security-and-authentication/securing-sensitive-data-using-payload-encryption/).
 
 ## Configuration <a name="configuration"></a>
 1. Create your account on [Mastercard Developers](https://sandbox.api.mastercard.com/) if you don't have it already.
 2. Create a new project here and add ***Carbon Calculator Experience*** to it and click continue.
-3. Download Sandbox Signing Key, a ```.p12``` file will be downloaded.
-4. In the Client Encryption Keys section of the dashboard, click on the ```Actions``` dropdown and download the client encryption key, a ``.pem``` file will be downloaded. 
-5. Copy the downloaded ```.p12``` and ```.pem``` files to ```src/main/resources``` folder in your code.
-6. Open ```src/main/resources/application.yml``` and configure:
+3. Download Sandbox Signing Key, a ```.p12``` file will be downloaded. Use this file for payload encryption.
+4. Download mastercard Signing Key, a ```mc.p12``` file will be downloaded. Use this file for payload decryption.
+5. In the Client Encryption Keys section of the dashboard, click on the ```Actions``` dropdown and download the client encryption key, a ``.pem``` file will be downloaded. 
+6. Copy the downloaded ```.p12``` , ```mc.p12``` and ```.pem``` files to ```src/main/resources``` folder in your code.
+7. Open ```src/main/resources/application.yml``` and configure:
     - ```mastercard.api.environment.basepath ```- Path to sandbox endpoint,for example for Sandbox https://sandbox.api.mastercard.com/cts
     - ```mastercard.api.environment.key-file ```- Path to keystore (.p12) file, just change the name as per the downloaded file in step 5. 
     - ```mastercard.api.authentication.consumer-key``` - Copy the Consumer key from "Sandbox/Production Keys" section on your project page

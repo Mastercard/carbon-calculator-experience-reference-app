@@ -1,6 +1,7 @@
 package com.mastercard.developers.carbontracker.controller;
 
 import com.mastercard.developers.carbontracker.exception.ServiceException;
+import com.mastercard.developers.carbontracker.service.GetDashboardService;
 import com.mastercard.developers.carbontracker.service.IssuerService;
 import com.mastercard.developers.carbontracker.service.UserRegistrationService;
 import io.swagger.annotations.ApiParam;
@@ -44,15 +45,18 @@ public class IssuerController {
 
   private final UserRegistrationService userRegistrationService;
 
+  private final GetDashboardService getDashboardService;
+
   @Autowired
-  public IssuerController(IssuerService issuerService, UserRegistrationService userRegistrationService) {
+  public IssuerController(IssuerService issuerService, UserRegistrationService userRegistrationService, GetDashboardService getDashboardService) {
     this.issuerService = issuerService;
     this.userRegistrationService = userRegistrationService;
+    this.getDashboardService = getDashboardService;
   }
 
   @GetMapping(DASHBOARDS)
-  public ResponseEntity<Dashboard> getAuthToken(@Pattern(regexp = "^[0-9A-Fa-f-]{36}") @Size(min = 36, max = 36) @ApiParam(value = "Unique identifier for a cardholder enrolled into Priceless Planet Carbon Tracker Service.", required = true) @PathVariable("userid") String userId) throws ServiceException {
-    return ResponseEntity.ok(issuerService.getAuthToken(userId));
+  public ResponseEntity<Dashboard> getAuthToken(@Pattern(regexp = "^[0-9A-Fa-f-]{36}") @Size(min = 36, max = 36) @ApiParam(value = "Unique identifier for a cardholder enrolled into Priceless Planet Carbon Tracker Service.", required = true) @PathVariable("userid") String userId, String lang) throws ServiceException {
+    return ResponseEntity.ok(getDashboardService.getAuthToken(userId, lang));
   }
 
 

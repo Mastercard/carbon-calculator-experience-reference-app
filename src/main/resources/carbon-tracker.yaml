@@ -1,8 +1,8 @@
 openapi: 3.0.3
 info:
-  title: Priceless Planet Carbon Tracker API
+  title: Carbon Calculator Experience API
   description: |
-    OpenAPI document for Priceless Planet Carbon Tracker Service. This API allows issuers to enrol their customers onto Priceless Planet Carbon Tracker platform so that they can get carbon footprint for their transactions and offset the same by donating for planting tree.
+    OpenAPI document for Carbon Calculator Experience Service. This API allows issuers to enrol their customers onto Carbon Calculator Experience platform so that they can get carbon footprint for their transactions and offset the same by donating for planting tree.
 
     In addition, this API also allows issuers to retrieve carbon footprint aggregate data for their customers.
       <br/>
@@ -18,9 +18,9 @@ info:
     email: apisupport@mastercard.com
   version: '1.0.0'
 servers:
-  - url: https://api.mastercard.com/carbontracker
+  - url: https://api.mastercard.com/cts
     description: Production
-  - url: https://sandbox.api.mastercard.com/carbontracker
+  - url: https://sandbox.api.mastercard.com/cts
     description: Sandbox
 tags:
   - name: Issuer
@@ -29,6 +29,19 @@ tags:
 
 paths:
   /issuers:
+    get:
+      tags:
+        - Issuer
+      summary: Used to get the issuer details.
+      description: Allows to get issuer details onboarded on Carbon Calculator Experience.
+      operationId: getIssuer
+      responses:
+        "200":
+          $ref: '#/components/responses/IssuerProfileDetails'
+        "404":
+          $ref: '#/components/responses/IssuerNotFoundError'
+        "401":
+          $ref: '#/components/responses/IssuerUnauthorisedError'
     put:
       tags:
         - Issuer
@@ -48,25 +61,13 @@ paths:
           $ref: '#/components/responses/IssuerNotFoundError'
         "415":
           $ref: '#/components/responses/UnsupportedMediaTypeError'
-
-    get:
-      tags:
-        - Issuer
-      summary: Used to get the issuer details.
-      description: Allows to get issuer details onboarded on Carbon Calculator Experience.
-      operationId: getIssuer
-      responses:
-        "200":
-          $ref: '#/components/responses/IssuerProfileDetails'
-        "404":
-          $ref: '#/components/responses/IssuerNotFoundError'
   /issuers/users:
     post:
       tags:
         - Issuer
-      summary: Allows issuer to enrol their customers onto Priceless Planet Carbon Tracker platform.
-      description: Used to enrol users for Priceless Planet Carbon Tracker so that they can track the carbon usage for their transactions and offset the same by donating for planting tree.
-      operationId: UserRegistration
+      summary: Allows issuer to enrol their customers onto Carbon Calculator Experience platform.
+      description: Used to enrol users for Carbon Calculator Experience so that they can track the carbon usage for their transactions and offset the same by donating for planting tree.
+      operationId: userRegistration
       x-mastercard-api-encrypted: true
       requestBody:
         $ref: '#/components/requestBodies/UserProfile'
@@ -87,17 +88,20 @@ paths:
       tags:
         - Issuer
       summary: Used to retrieve Short-Lived URL of user's dashboard to view their carbon footprints and contributions to Priceless Planet.
-      description: Allows issuers to retrieve Short-Lived URL for an enrolled user. Issuer needs to load this URL within their application so that user can view their dashboard containing carbon footprints and donation.
-      operationId: GetAuthToken
+      description: Allows the issuer to retrieve a Short-Lived URL for the enrolled user. The API response is encrypted and the issuer needs to decrypt the response using Mastercard client encryption key. The decrypted text contains the Short-Lived URL that expires after 15 mins. Use this URL to render the Carbon Calculator Experience on a WebView.
+      operationId: getAuthToken
       parameters:
         - $ref: '#/components/parameters/UserID'
+        - $ref: '#/components/parameters/Lang'
       responses:
         "200":
           $ref: '#/components/responses/Dashboard'
+        "401":
+          $ref: '#/components/responses/DashboardsUnauthorisedError'
         "400":
-          $ref: '#/components/responses/BadRequestError'
+          $ref: '#/components/responses/DashboardBadRequestError'
         "404":
-          $ref: '#/components/responses/UserNotFoundError'
+          $ref: '#/components/responses/DashboardNotFoundError'
 
   /issuers/users/{userid}/aggregate-carbon-scores:
     get:
@@ -105,16 +109,18 @@ paths:
         - Issuer
       summary: Fetches monthly aggregate carbon score for the transactions.
       description: Allows issuers to retrieve an aggregate carbon footprint for the transactions done by a user.
-      operationId: GetAggregateCarbonScore
+      operationId: getAggregateCarbonScore
       parameters:
         - $ref: '#/components/parameters/UserID'
       responses:
         "200":
           $ref: '#/components/responses/AggregateCarbonScore'
         "400":
-          $ref: '#/components/responses/BadRequestError'
+          $ref: '#/components/responses/AggregateCarbonScoreBadRequestError'
+        "401":
+          $ref: '#/components/responses/AggregateCarbonScoreUnauthorisedError'
         "404":
-          $ref: '#/components/responses/UserNotFoundError'
+          $ref: '#/components/responses/AggregateCarbonScoreNotFoundError'
 
   /issuers/user-deletions:
     post:
@@ -138,10 +144,11 @@ paths:
           $ref: '#/components/responses/DeleteUserNotFoundError'
         "415":
           $ref: '#/components/responses/UnsupportedMediaTypeError'
+
 components:
   requestBodies:
     UserProfile:
-      description: User's Personal and Card information which needs to be registered onto Priceless Planet Carbon Tracker platform. This endpoint uses Mastercard payload encryption. Please refer to the **[Payload Encryption](https://mstr.cd/2UPfda0)** page for implementation details.
+      description: User's Personal and Card information which needs to be registered onto Carbon Calculator Experience platform. This endpoint uses Mastercard payload encryption. Please refer to the **[Payload Encryption](https://mstr.cd/2UPfda0)** page for implementation details.
       required: true
       content:
         application/json:
@@ -165,57 +172,9 @@ components:
               $ref: '#/components/schemas/UserID'
             minItems: 1
             maxItems: 500
-          examples:
-            UserIDs:
-              $ref: '#/components/examples/UserIDs'
   schemas:
-    UserProfile:
-      title: UserProfile
-      type: object
-      description: The request object for enrolling a new user onto Priceless Planet Carbon Tracker platform.
-      required:
-        - cardNumber
-        - billingAddress
-        - email
-        - locale
-        - name
-        - expiryInfo
-        - cardBaseCurrency
-        - cardholderName
-      properties:
-        email:
-          $ref: '#/components/schemas/Email'
-        name:
-          $ref: '#/components/schemas/UserName'
-        cardholderName:
-          type: string
-          description: Name of the card holder. (format- First Name Last Name)
-          minLength: 1
-          maxLength: 100
-          example: John Doe
-        cardNumber:
-          $ref: '#/components/schemas/CardNumber'
-        cardBaseCurrency:
-          $ref: '#/components/schemas/CurrencyCode'
-        expiryInfo:
-          $ref: '#/components/schemas/CardExpiry'
-        billingAddress:
-          $ref: '#/components/schemas/Address'
-        locale:
-          type: string
-          description: User locale which is registered with issuer.
-          minLength: 1
-          maxLength: 100
-          example: en-US
-    CountryName:
-      type: string
-      description: ISO 3166 country short name
-      pattern: ^[a-zA-Z\s\\(\\),\\.]+$
-      minLength: 3
-      maxLength: 50
-      example: Brazil
     IssuerProfileDetails:
-      title: IssuerProfileDetails
+      title: IssuerProfile
       type: object
       description: Information about an issuer as available on the server.
       required:
@@ -292,30 +251,51 @@ components:
           type: string
           example: "https://www.issuer.opt-out-url.html"
           description: Opt out url for the given user.
-    IssuerConfiguration:
-      title: IssuerConfiguration
+    UserProfile:
+      title: UserProfile
       type: object
-      description: Configuration details for an Issuer.
+      description: The request object for enrolling a new user onto Carbon Calculator Expereince Service.
+      required:
+        - cardNumber
+        - billingAddress
+        - email
+        - locale
+        - name
+        - expiryInfo
+        - cardBaseCurrency
+        - cardholderName
       properties:
-        supportedAccountRange:
+        email:
+          $ref: '#/components/schemas/Email'
+        name:
+          $ref: '#/components/schemas/UserName'
+        cardholderName:
           type: string
-          pattern: ^[0-9]{4,8}(,[0-9]{4,8})*$
-          description: Comma separated account range must be between 4 and 8 supported by an issuer.
-          example: '534403, 518145, 518152, 5403, 5424'
-        callbackUrl:
+          description: Name of the card holder. (format- First Name Last Name)
+          minLength: 1
+          maxLength: 100
+          example: John Doe
+        cardNumber:
+          $ref: '#/components/schemas/CardNumber'
+        cardBaseCurrency:
+          $ref: '#/components/schemas/CurrencyCode'
+        expiryInfo:
+          $ref: '#/components/schemas/CardExpiry'
+        billingAddress:
+          $ref: '#/components/schemas/Address'
+        locale:
           type: string
-          minLength: 0
-          maxLength: 2083
-          description: A service URL that can receive transaction score information from Mastercard in near real-time.
-          example: 'https://www.abcbank.com/payment-cards/notify-transaction-footprints'
+          description: User locale which is registered with issuer.
+          minLength: 1
+          maxLength: 100
+          example: en-US
     CurrencyCode:
       title: currencyCode
       type: string
       description: Currency code as per ISO 4217
-      maxLength: 3
-      minLength: 3
       pattern: '^[A-Za-z]{3}$'
       example: EUR
+
     CardExpiry:
       type: object
       properties:
@@ -332,8 +312,6 @@ components:
       title: CardExpiry
     CardNumber:
       type: string
-      minLength: 16
-      maxLength: 16
       pattern: '^\d{16}$'
       description: Original payment card number in full.
       example: 5344035171229750
@@ -417,7 +395,6 @@ components:
           maxLength: 100
           example: Doe
       title: Username
-
     IssuerProfile:
       title: IssuerProfile
       type: object
@@ -460,6 +437,30 @@ components:
           maxLength: 9
           description: Status of an issuer on the server. Possible values are ACTIVE & SUSPENDED.
           example: 'ACTIVE'
+    IssuerConfiguration:
+      title: IssuerConfiguration
+      type: object
+      description: Configuration details for an Issuer.
+      properties:
+        supportedAccountRange:
+          type: string
+          pattern: ^[0-9]{4,8}(,[0-9]{4,8})*$
+          description: Comma separated account range must be between 4 and 8 supported by an issuer.
+          example: '534403, 518145, 518152, 5403, 5424'
+        callbackUrl:
+          type: string
+          minLength: 0
+          maxLength: 2083
+          description: A service URL that can receive transaction score information from Mastercard in near real-time.
+          example: 'https://www.abcbank.com/payment-cards/notify-transaction-footprints'
+
+    CountryName:
+      type: string
+      description: ISO 3166 country short name
+      pattern: ^[a-zA-Z\s\\(\\),\\.]+$
+      minLength: 3
+      maxLength: 50
+      example: Brazil
     UserReference:
       title: UserReference
       type: object
@@ -473,6 +474,8 @@ components:
           $ref: '#/components/schemas/UserID'
         cardNumberLastFourDigits:
           type: string
+          minLength: 4
+          maxLength: 4
           pattern: '^\d{4}$'
           description: Last 4 digits of a full payment card number which was provided as enrolment request.
           example: 4363
@@ -480,23 +483,31 @@ components:
           type: string
           minLength: 6
           maxLength: 7
-          description: Status of a Payment Card on Carbon Calculator Expereince Service. Possible values are ACTIVE &amp; DELETED.
+          description: Status of a Payment Card on Carbon Calculator Experience platform. Possible values are ACTIVE &amp; DELETED.
           example: ACTIVE
     UserID:
       type: string
+      minLength: 36
+      maxLength: 36
       pattern: '^[0-9A-Fa-f-]{36}'
-      description: Unique identifier for a user enrolled into Carbon Calculator Expereince Service.
+      description: Unique identifier for a user enrolled into Carbon Calculator Experience platform.
       example: f5d88571-ac15-465a-a0d8-1ad1327b9a06
-
+    Lang:
+      type: string
+      description: Language for the issuer.
+      example: en
     Dashboard:
       type: object
+      required:
+        - url
+        - expiryInMillis
       properties:
         url:
           type: string
           description: This is the URL which needs to be rendered in web view.
           minLength: 1
           maxLength: 5000
-          example: https://ppctwebview.b221.net/home/?auth_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
+          example: https://ppctwebview.b221.net/home/?auth_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c&lang=en
         expiryInMillis:
           type: string
           description: Denotes expiry limit for the URL.
@@ -505,6 +516,9 @@ components:
           example: 300000
     AggregateCarbonScore:
       type: object
+      required:
+        - carbonEmissionInGrams
+        - aggregateDate
       properties:
         carbonEmissionInGrams:
           type: string
@@ -551,10 +565,10 @@ components:
       properties:
         Source:
           type: string
-          description: The application name that generated this error. If an error is generated and returned by the gateway, then this field will have value as `Gateway`. Other possible values are `CARBON CALCULATOR`, `DONATE`, `PRICELESS PLANET CARBON TRACKER` or `PRICELESS PLANET`.
+          description: The application name that generated this error. If an error is generated and returned by the gateway, then this field will have value as `Gateway`. Other possible values are `CARBON CALCULATOR`, `DONATE`, `CARBON_CALCULATOR_EXPERIENCE` or `PRICELESS PLANET`.
           minLength: 1
           maxLength: 100
-          example: 'Carbon Tracker'
+          example: 'CARBON_CALCULATOR_EXPERIENCE'
         ReasonCode:
           type: string
           description: A unique constant identifying the error case encountered during request processing.
@@ -577,16 +591,24 @@ components:
           minLength: 0
           maxLength: 5000
           example: email must not be null.
+
   parameters:
     UserID:
       in: path
       name: userid
-      description: Unique identifier for a user enrolled into Priceless Planet Carbon Tracker platform.
+      description: Unique identifier for a user enrolled into Carbon Calculator Experience platform.
       required: true
       example: f5d88571-ac15-465a-a0d8-1ad1327b9a06
       schema:
         $ref: '#/components/schemas/UserID'
-
+    Lang:
+      in: query
+      name: lang
+      description: language for the issuer
+      required: false
+      example: en
+      schema:
+        $ref: '#/components/schemas/Lang'
   responses:
     Dashboard:
       description: The response object contains Short-Live URL along with authentication token.
@@ -594,24 +616,6 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/Dashboard'
-    IssuerProfileDetails:
-      description: 'The response object that contains latest information of an issuer as available on server.'
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/IssuerProfileDetails'
-          examples:
-            IssuerDetails:
-              $ref: '#/components/examples/IssuerDetails'
-    IssuerNotFoundError:
-      description: This response code is returned when server cannot find the account which has been used to call this API.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorWrapper'
-          examples:
-            IssuerNotFoundError:
-              $ref: '#/components/examples/IssuerNotFoundError'
     IssuerProfile:
       description: 'The response object that contains latest information of an issuer as available on server.'
       content:
@@ -623,17 +627,15 @@ components:
               $ref: '#/components/examples/IssuerWithCallbackUrl'
             IssuerWithoutCallbackUrl:
               $ref: '#/components/examples/IssuerWithoutCallbackUrl'
-    UserIDs:
-      description: The response object contains list user ids
+    IssuerProfileDetails:
+      description: 'The response object that contains latest information of an issuer as available on server.'
       content:
         application/json:
           schema:
-            type: array
-            items:
-              $ref: '#/components/schemas/UserID'
+            $ref: '#/components/schemas/IssuerProfileDetails'
           examples:
-            DeletedUserIDs:
-              $ref: '#/components/examples/UserIDs'
+            IssuerDetails:
+              $ref: '#/components/examples/IssuerDetails'
     UserReference:
       description: The response object that contains Payment Card information after successful registration.
       content:
@@ -649,6 +651,18 @@ components:
           examples:
             AggregateCarbonScores:
               $ref: '#/components/examples/AggregateCarbonScore'
+    UserIDs:
+      description: The response object contains list user ids
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/UserID'
+          examples:
+            DeletedUserIds:
+              $ref: '#/components/examples/UserIDs'
+
 
     UserEnrolmentBadRequestError:
       description: This response code is returned when a request is invalid or data in the request is not valid or a card/user is already registered on the server.
@@ -659,18 +673,78 @@ components:
           examples:
             BadRequestError:
               $ref: '#/components/examples/BadRequestError'
+            InvalidNameError:
+              $ref: '#/components/examples/InvalidUserNameError'
+            InvalidFirstNameError:
+              $ref: '#/components/examples/InvalidUserNameError'
+            InvalidLastNameError:
+              $ref: '#/components/examples/InvalidUserNameError'
+            InvalidCardHolderNameError:
+              $ref: '#/components/examples/InvalidCardHolderNameError'
+            EncryptedDataLengthError:
+              $ref: '#/components/examples/EncryptedDataLengthError'
             RequestDecryptionError:
               $ref: '#/components/examples/RequestDecryptionError'
 
-    BadRequestError:
-      description: This response code is returned when a request is invalid or data in the request is not valid.
+
+    IssuerUnauthorisedError:
+      description: This response code is returned when a user and issuer is unauthorized.
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/ErrorWrapper'
           examples:
-            BadRequestError:
-              $ref: '#/components/examples/BadRequestError'
+            IssuerInactiveError:
+              $ref: '#/components/examples/IssuerInactiveError'
+
+            IssuerSuspendedError:
+              $ref: '#/components/examples/IssuerSuspendedError'
+
+            IssuerTerminatedError:
+              $ref: '#/components/examples/IssuerTerminatedError'
+    UserEnrolmentUnauthorisedError:
+      description: This response code is returned for unauthorized isuuer.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorWrapper'
+          examples:
+            IssuerInactiveError:
+              $ref: '#/components/examples/IssuerInactiveError'
+            IssuerSuspendedError:
+              $ref: '#/components/examples/IssuerSuspendedError'
+            IssuerTerminatedError:
+              $ref: '#/components/examples/IssuerTerminatedError'
+    UpdateIssuerBadRequestError:
+      description: This response code is returned when either a request is invalid or data provided in the request is in invalid format.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorWrapper'
+          examples:
+            IssuerEmptyRequestBodyError:
+              $ref: '#/components/examples/IssuerEmptyRequestBodyError'
+            IssuerInvalidAccountRangeLengthError:
+              $ref: '#/components/examples/IssuerInvalidAccountRangeLengthError'
+
+
+    DashboardsUnauthorisedError:
+      description: This response code is returned when a user and issuer is unauthorized.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorWrapper'
+          examples:
+            IssuerInactiveError:
+              $ref: '#/components/examples/IssuerInactiveError'
+            UserInactiveError:
+              $ref: '#/components/examples/UserInactiveError'
+            IssuerSuspendedError:
+              $ref: '#/components/examples/IssuerSuspendedError'
+            UserTerminatedError:
+              $ref: '#/components/examples/UserTerminatedError'
+            IssuerTerminatedError:
+              $ref: '#/components/examples/IssuerTerminatedError'
     UpdateIssuerUnauthorisedError:
       description: This response code is returned for unauthorized isuuer.
       content:
@@ -680,25 +754,49 @@ components:
           examples:
             IssuerInactiveError:
               $ref: '#/components/examples/IssuerInactiveError'
-
-    UserNotFoundError:
-      description: This response code is returned when a user not found or been removed
+            IssuerSuspendedError:
+              $ref: '#/components/examples/IssuerSuspendedError'
+            IssuerTerminatedError:
+              $ref: '#/components/examples/IssuerTerminatedError'
+    DashboardNotFoundError:
+      description: This response code is returned when a user or issuer is not present.
       content:
         application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorWrapper'
           examples:
             UserNotFoundError:
               $ref: '#/components/examples/UserNotFoundError'
-          schema:
-            $ref: '#/components/schemas/ErrorWrapper'
-    DeleteUserBadRequestError:
-      description: This response code is returned when a request is invalid or data in the request is not valid.
+            IssuerNotFoundError:
+              $ref: '#/components/examples/IssuerNotFoundError'
+    AggregateCarbonScoreUnauthorisedError:
+      description: This response code is returned when a user terminated or in active.
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/ErrorWrapper'
           examples:
-            UserCountError:
-              $ref: '#/components/examples/UserCountError'
+            IssuerInactiveError:
+              $ref: '#/components/examples/IssuerInactiveError'
+            UserInactiveError:
+              $ref: '#/components/examples/UserInactiveError'
+            UserTerminatedError:
+              $ref: '#/components/examples/UserTerminatedError'
+            IssuerSuspendedError:
+              $ref: '#/components/examples/IssuerSuspendedError'
+            IssuerTerminatedError:
+              $ref: '#/components/examples/IssuerTerminatedError'
+    AggregateCarbonScoreNotFoundError:
+      description: This response code is returned when a user or issuer is not present.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorWrapper'
+          examples:
+            UserNotFoundError:
+              $ref: '#/components/examples/UserNotFoundError'
+            IssuerNotFoundError:
+              $ref: '#/components/examples/IssuerNotFoundError'
     DeleteUserUnauthorisedError:
       description: This response code is returned when a user terminated or in active.
       content:
@@ -708,8 +806,40 @@ components:
           examples:
             IssuerInactiveError:
               $ref: '#/components/examples/IssuerInactiveError'
+            IssuerSuspendedError:
+              $ref: '#/components/examples/IssuerSuspendedError'
+            IssuerTerminatedError:
+              $ref: '#/components/examples/IssuerTerminatedError'
     DeleteUserNotFoundError:
       description: This response code is returned when a user or issuer is not present.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorWrapper'
+          examples:
+            IssuerNotFoundError:
+              $ref: '#/components/examples/IssuerNotFoundError'
+    DashboardBadRequestError:
+      description: This response code is returned when a request is invalid or data in the request is not valid.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorWrapper'
+          examples:
+            InvalidUserIdError:
+              $ref: '#/components/examples/InvalidUserIdError'
+    AggregateCarbonScoreBadRequestError:
+      description: This response code is returned when a request is invalid or data in the request is not valid.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorWrapper'
+          examples:
+            InvalidUserIdError:
+              $ref: '#/components/examples/InvalidUserIdError'
+
+    IssuerNotFoundError:
+      description: This response code is returned when server cannot find the account which has been used to call this API.
       content:
         application/json:
           schema:
@@ -726,28 +856,39 @@ components:
           examples:
             UnsupportedMediaTypeError:
               $ref: '#/components/examples/UnsupportedMediaTypeError'
-    UserEnrolmentUnauthorisedError:
-      description: This response code is returned for unauthorized isuuer.
+    DeleteUserBadRequestError:
+      description: This response code is returned when a request is invalid or data in the request is not valid.
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/ErrorWrapper'
           examples:
-            IssuerInactiveError:
-              $ref: '#/components/examples/IssuerInactiveError'
-    UpdateIssuerBadRequestError:
-      description: This response code is returned when either a request is invalid or data provided in the request is in invalid format.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorWrapper'
-          examples:
-            IssuerInvalidAccountRangeError:
-              $ref: '#/components/examples/IssuerInvalidAccountRangeError'
-            IssuerInvalidAccountRangeLengthError:
-              $ref: '#/components/examples/IssuerInvalidAccountRangeLengthError'
+            UserCountError:
+              $ref: '#/components/examples/UserCountError'
+            InvalidUserIdLengthError:
+              $ref: '#/components/examples/InvalidUserIdLengthError'
 
   examples:
+    UserIDs:
+      value: [ "4ba581a55-bcea-4c3e-8e0f-9b4726e5e6d3",
+               "c5d88571-ac15-465a-a0d8-1ad1327b9a06" ]
+    IssuerWithoutCallbackUrl:
+      value:
+        clientId: 'fjl2fxzsYl1OpvxkBItC9nVw1PSQc_b-eQMcmQFg011ab4b5'
+        customerId: '12345'
+
+        supportedAccountRange: '534403, 518145, 518152, 5403, 5424'
+        callbackUrl: ''
+        status: 'ACTIVE'
+    IssuerWithCallbackUrl:
+      value:
+        clientId: 'fjl2fxzsYl1OpvxkBItC9nVw1PSQc_b-eQMcmQFg011ab4b5'
+        customerId: '12345'
+
+        supportedAccountRange: '534403, 518145, 518152, 5403, 5424'
+        callbackUrl: 'https://www.abcbank.com/payment-cards/notify-transaction-footprints'
+        status: 'ACTIVE'
+
     AggregateCarbonScore:
       value:
         carbonEmissionInGrams: 32.45
@@ -766,37 +907,20 @@ components:
         termsAndConditionURL: 'https://www.issuer.term-and-conditions.html'
         privacyNoticeURL: 'https://www.issuer.privacy-policy-url.html'
         optOutURL: 'https://www.issuer.opt-out-url.html'
-    IssuerWithoutCallbackUrl:
-      value:
-        clientId: 'fjl2fxzsYl1OpvxkBItC9nVw1PSQc_b-eQMcmQFg011ab4b5'
-        customerId: ''
-        issuerName: 'ABC Bank'
-        supportedAccountRange: '534403, 518145, 518152, 5403, 5424'
-        callbackUrl: ''
-        status: 'ACTIVE'
-    IssuerWithCallbackUrl:
-      value:
-        clientId: 'fjl2fxzsYl1OpvxkBItC9nVw1PSQc_b-eQMcmQFg011ab4b5'
-        customerId: ''
-        issuerName: 'ABC Bank'
-        supportedAccountRange: '534403, 518145, 518152, 5403, 5424'
-        callbackUrl: 'https://www.abcbank.com/payment-cards/notify-transaction-footprints'
-        status: 'ACTIVE'
-
     UserNotFoundError:
       value:
         Errors:
           Error:
-            - Source: 'PRICELESS PLANET CARBON TRACKER'
+            - Source: 'CARBON CALCULATOR EXPERIENCE'
               ReasonCode: 'USER_NOT_FOUND'
               Description: 'We cannot find user details for provided userId. Kindly register user through enrolment process.'
               Recoverable: false
-              Details: 'Make sure user is enrolled through /users API endpoint.'
+              Details: 'Make sure user is enrolled through /issuers/users API endpoint.'
     RequestDecryptionError:
       value:
         Errors:
           Error:
-            - Source: 'PRICELESS PLANET CARBON TRACKER'
+            - Source: 'CARBON CALCULATOR EXPERIENCE'
               ReasonCode: 'CRYPTO_ERROR'
               Description: 'We are unable to decipher your request, kindly verify your request before trying again. If the problem persist then reach out to your Mastercard associate.'
               Recoverable: false
@@ -805,20 +929,95 @@ components:
       value:
         Errors:
           Error:
-            - Source: 'PRICELESS PLANET CARBON TRACKER'
+            - Source: 'CARBON CALCULATOR EXPERIENCE'
               ReasonCode: 'INVALID_REQUEST_PARAMETER'
               Description: 'One of the request parameters is invalid, try again with correct request.'
               Recoverable: false
-              Details: 'email must not be null'
-    UserCountError:
+              Details: 'Email must be in the format: xyz@mail.com'
+
+    IssuerEmptyRequestBodyError:
+      value:
+        Errors:
+          Error:
+            - Source: 'Carbon-Calculator'
+              ReasonCode: 'INVALID_REQUEST_PARAMETER'
+              Description: 'One of the request parameters is invalid, try again with correct request.'
+              Recoverable: false
+              Details: 'Required request body is missing'
+    IssuerInvalidAccountRangeLengthError:
       value:
         Errors:
           Error:
             - Source: 'CARBON CALCULATOR EXPERIENCE'
               ReasonCode: 'INVALID_REQUEST_PARAMETER'
               Description: 'One of the request parameters is invalid, try again with correct request.'
-              Recoverable: true
-              Details: 'Request body should have at least 1 or not more than 500 userIds'
+              Recoverable: false
+              Details: 'Each value in supportedAccountRange must be numeric and size should be between 4 and 8'
+
+    EncryptedDataLengthError:
+      value:
+        Errors:
+          Error:
+            - Source: 'CARBON CALCULATOR EXPERIENCE'
+              ReasonCode: 'INVALID_REQUEST_PARAMETER'
+              Description: 'One of the request parameters is invalid, try again with correct request.'
+              Recoverable: false
+              Details: 'encryptedData size must be between 128 and 54000'
+    IssuerTerminatedError:
+      value:
+        Errors:
+          Error:
+            - Source: 'CARBON CALCULATOR EXPERIENCE'
+              ReasonCode: 'ACCOUNT_TERMINATED'
+              Description: "Your account has been terminated, you won't be able to access any service. Kindly register yourself again."
+              Recoverable: false
+              Details: "Your account has been terminated, you won't be able to access any service. Kindly register yourself again."
+    InvalidUserIdError:
+      value:
+        Errors:
+          Error:
+            - Source: 'CARBON CALCULATOR EXPERIENCE'
+              ReasonCode: 'INVALID_REQUEST_PARAMETER'
+              Description: 'One of the request parameters is invalid, try again with correct request.'
+              Recoverable: false
+              Details: 'UserId should be of size 36'
+    UnsupportedMediaTypeError:
+      value:
+        Errors:
+          Error:
+            - Source: 'CARBON CALCULATOR EXPERIENCE'
+              ReasonCode: 'UNSUPPORTED_MEDIA_TYPE'
+              Description: 'Requested media type is not supported, try again with supported media type.'
+              Recoverable: false
+              Details: ''
+    InvalidCardHolderNameError:
+      value:
+        Errors:
+          Error:
+            - Source: 'CARBON CALCULATOR EXPERIENCE'
+              ReasonCode: 'INVALID_REQUEST_PARAMETER'
+              Description: 'One of the request parameters is invalid, try again with correct request.'
+              Recoverable: false
+              Details: "CardholderName must only contain alphanumeric (A-Z, a-z, 0-9), whitespace, and the characters ('), (,) and (')"
+    InvalidUserNameError:
+      value:
+        Errors:
+          Error:
+            - Source: 'CARBON CALCULATOR EXPERIENCE'
+              ReasonCode: 'INVALID_REQUEST_PARAMETER'
+              Description: 'One of the request parameters is invalid, try again with correct request.'
+              Recoverable: false
+              Details: "Username must only contain alphanumeric (A-Z, a-z, 0-9) and the characters ('), (,) and (')"
+
+    UserInactiveError:
+      value:
+        Errors:
+          Error:
+            - Source: 'CARBON CALCULATOR EXPERIENCE'
+              ReasonCode: 'USER_INACTIVE'
+              Description: "User is inactive, kindly contact your Mastercard associate to activate it. Until then you won't be able to access any service."
+              Recoverable: false
+              Details: "User is inactive, kindly contact your Mastercard associate to activate it. Until then you won't be able to access any service."
     IssuerInactiveError:
       value:
         Errors:
@@ -833,30 +1032,20 @@ components:
         Errors:
           Error:
             - Source: 'CARBON CALCULATOR EXPERIENCE'
-              ReasonCode: 'ACCOUNT_NOT_FOUND'
-              Description: 'Account Id is not Identified'
+              ReasonCode: 'SERVICE_PROVIDER_NOT_FOUND'
+              Description: 'service provider clientId is not Identified'
               Recoverable: false
-              Details: 'We cannot find the account which you are using to access this service. Kindly register your account or contact your Mastercard associate if you have already registered with us earlier.'
-
-    UnsupportedMediaTypeError:
+              Details: 'Client not found.'
+    UserCountError:
       value:
         Errors:
           Error:
             - Source: 'CARBON CALCULATOR EXPERIENCE'
-              ReasonCode: 'UNSUPPORTED_MEDIA_TYPE'
-              Description: 'Requested media type is not supported, try again with supported media type.'
-              Recoverable: false
-              Details: ''
-    IssuerInvalidAccountRangeError:
-      value:
-        Errors:
-          Error:
-            - Source: 'Carbon-Calculator'
-              ReasonCode: 'SERVICE_PROVIDER_ACCOUNT_RANGES_ALREADY_EXIST'
-              Description: 'Service Provider with supported account range [1234] already exists.'
-              Recoverable: false
-              Details: ''
-    IssuerInvalidAccountRangeLengthError:
+              ReasonCode: 'INVALID_REQUEST_PARAMETER'
+              Description: 'One of the request parameters is invalid, try again with correct request.'
+              Recoverable: true
+              Details: 'Request body should have at least 1 or not more than 500 userIds'
+    InvalidUserIdLengthError:
       value:
         Errors:
           Error:
@@ -864,8 +1053,23 @@ components:
               ReasonCode: 'INVALID_REQUEST_PARAMETER'
               Description: 'One of the request parameters is invalid, try again with correct request.'
               Recoverable: false
-              Details: 'Each value in supportedAccountRange must be numeric and size should be between 4 and 8'
+              Details: "userId must match \"^[0-9A-Fa-f\\-]{36}\""
+    IssuerSuspendedError:
+      value:
+        Errors:
+          Error:
+            - Source: 'CARBON CALCULATOR EXPERIENCE'
+              ReasonCode: "ACCOUNT_SUSPENDED"
+              Description: "Your account has been suspended temporarily, kindly contact your Mastercard associate to activate it again. Until then you won't be able to access any service."
+              Recoverable: false
+              Details: "Your account has been suspended temporarily, kindly contact your Mastercard associate to activate it again. Until then you won't be able to access any service."
+    UserTerminatedError:
+      value:
+        Errors:
+          Error:
+            - Source: 'CARBON CALCULATOR EXPERIENCE'
+              ReasonCode: 'USER_TERMINATE_IN_PROGRESS'
+              Description: "User termination is in progress, kindly contact your Mastercard associate to activate it again. Until then you won't be able to access any service."
+              Recoverable: false
+              Details: "User termination is in progress, kindly contact your Mastercard associate to activate it again. Until then you won't be able to access any service."
 
-    UserIDs:
-      value: [ "4ba581a55-bcea-4c3e-8e0f-9b4726e5e6d3",
-               "c5d88571-ac15-465a-a0d8-1ad1327b9a06" ]

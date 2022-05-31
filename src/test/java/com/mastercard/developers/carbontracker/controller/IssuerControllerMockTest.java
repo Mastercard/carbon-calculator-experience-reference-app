@@ -3,6 +3,7 @@ package com.mastercard.developers.carbontracker.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.mastercard.developers.carbontracker.service.GetDashboardService;
 import com.mastercard.developers.carbontracker.service.IssuerService;
 import com.mastercard.developers.carbontracker.service.UserRegistrationService;
 import org.junit.jupiter.api.BeforeAll;
@@ -55,6 +56,9 @@ class IssuerControllerMockTest {
   @InjectMocks
   private IssuerController issuerController;
 
+  @Mock
+  private GetDashboardService getDashboardService;
+
   private MockMvc mockMvc;
 
   ObjectMapper objectMapper;
@@ -81,7 +85,7 @@ class IssuerControllerMockTest {
     Dashboard dashboard = new Dashboard();
     dashboard.setExpiryInMillis("timeStamp");
     dashboard.setUrl(DASHBOARDS);
-    when(issuerService.getAuthToken(any())).thenReturn(dashboard);
+    when(getDashboardService.getAuthToken(any(),any())).thenReturn(dashboard);
     MvcResult mvcResult = mockMvc.perform(get(DASHBOARDS, "userId")
       .contentType("application/json")).andExpect(status().isOk()).andReturn();
 
@@ -174,7 +178,7 @@ class IssuerControllerMockTest {
 
     List<String> stringList = new ArrayList<>();
     stringList.add(userId1);
-    
+
     String request = objectMapper.writeValueAsString(stringList);
     ResponseEntity<List<String>> res = new ResponseEntity<>(HttpStatus.ACCEPTED);
     when(issuerService.deleteUsers(any())).thenReturn(res);
