@@ -16,4 +16,4 @@ mastercard:
 
 binRange: #Bin range for the given issuer
 
-lang: en #Provide language code in which webview should be rendered. Supported lang "en,es-419,sv". Default is "en".
+lang: en-US #Provide language code in which webview should be rendered. Supported lang "en,es-419,sv". Default is "en".
