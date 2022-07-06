@@ -212,7 +212,7 @@ components:
               $ref: '#/components/examples/UserIDs'
   schemas:
     IssuerProfileDetails:
-      title: IssuerProfile
+      title: IssuerProfileDetails
       type: object
       description: Information about an Issuer as available on the server.
       required:
@@ -226,6 +226,7 @@ components:
         - termsAndConditionURL
         - privacyNoticeURL
         - optOutURL
+        - preferredTheme
       properties:
         clientId:
           type: string
@@ -289,6 +290,19 @@ components:
           type: string
           example: 'https://www.issuer.opt-out-url.html'
           description: OPT out URL for the given user.
+        preferredTheme:
+          $ref: '#/components/schemas/PreferredTheme'
+    PreferredTheme:
+      type: object
+      additionalProperties:
+        type: string
+      example: {
+        "backgroundColor": "#FFFFFF",
+        "widgetbackgroundColor": "#FFFFFF",
+        "fontColor": "#000000",
+        "buttonColor": "#999999",
+        "buttonTextColor": "#FFFFFF"
+      }
     UserProfile:
       title: UserProfile
       type: object
@@ -481,11 +495,23 @@ components:
       properties:
         supportedAccountRange:
           type: string
-          pattern: '^[0-9]{4,8}(,[0-9]{4,8})*$'
+          pattern: ^[0-9]{4,8}(,[0-9]{4,8})*$
           description: >-
             Comma separated account range must be between 4 and 8 supported by
             an Issuer.
           example: '534403,518145,518152,5403,5424'
+        privacyNoticeURL:
+          type: string
+          example: "https://www.issuer.privacy-policy-url.html"
+          description: Privacy notice url.
+        termsAndConditionURL:
+          type: string
+          example: "https://www.issuer.term-and-conditions.html"
+          description: Terms and condition urk for the given user.
+        optOutURL:
+          type: string
+          example: "https://www.issuer.opt-out-url.html"
+          description: Opt out url for the given user.
     CountryName:
       type: string
       description: ISO 3166 country short name
@@ -546,7 +572,7 @@ components:
           minLength: 1
           maxLength: 5000
           example: >-
-            https://ppctwebview.b221.net/home/?auth_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c&lang=en
+            https://ppctwebview.b221.net/home/?auth_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
         expiryInMillis:
           type: string
           description: Denotes expiry limit for the URL.
@@ -939,9 +965,11 @@ components:
       value:
         clientId: 'fjl2fxzsYl1OpvxkBItC9nVw1PSQc_b-eQMcmQFg011ab4b5'
         customerId: '12345'
-
         supportedAccountRange: '534403, 518145, 518152, 5403, 5424'
         status: 'ACTIVE'
+        termsAndConditionURL: 'https://www.issuer.term-and-conditions.html'
+        privacyNoticeURL: 'https://www.issuer.privacy-policy-url.html'
+        optOutURL: 'https://www.issuer.opt-out-url.html'
     AggregateCarbonScore:
       value:
         carbonEmissionInGrams: 32.45
@@ -959,6 +987,12 @@ components:
         termsAndConditionURL: 'https://www.issuer.term-and-conditions.html'
         privacyNoticeURL: 'https://www.issuer.privacy-policy-url.html'
         optOutURL: 'https://www.issuer.opt-out-url.html'
+        preferredTheme: { "backgroundColor": "#FFFFFF",
+                          "widgetbackgroundColor": "#FFFFFF",
+                          "fontColor": "#000000",
+                          "buttonColor": "#999999",
+                          "buttonTextColor": "#FFFFFF"
+        }
     UserNotFoundError:
       value:
         Errors:
