@@ -24,7 +24,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @Component
@@ -76,6 +78,13 @@ public class IssuerControllerUseCase {
             log.info("Updating issuer details ");
             IssuerConfiguration issuerConfiguration = new IssuerConfiguration();
             issuerConfiguration.setSupportedAccountRange("5051");
+            Map<String,String> preferredTheme = new HashMap<>();
+            preferredTheme.put("backgroundColor","#FFFFFF");
+            preferredTheme.put("widgetBackgroundColor","#FFFFFF");
+            preferredTheme.put("buttonColor","#999999");
+            preferredTheme.put("buttonTextColor","#000000");
+            preferredTheme.put("fontColor","#999999");
+            issuerConfiguration.setPreferredTheme(preferredTheme);
             IssuerProfile issuerProfile = issuerService.updateIssuer(issuerConfiguration);
             log.info("Response received after updating the issuer {}", issuerProfile);
         } catch (ServiceException e) {

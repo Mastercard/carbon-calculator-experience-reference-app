@@ -298,7 +298,7 @@ components:
         type: string
       example: {
         "backgroundColor": "#FFFFFF",
-        "widgetbackgroundColor": "#FFFFFF",
+        "widgetBackgroundColor": "#FFFFFF",
         "fontColor": "#000000",
         "buttonColor": "#999999",
         "buttonTextColor": "#FFFFFF"
@@ -488,6 +488,20 @@ components:
             Status of an Issuer on the server. Possible values are Active and
             Suspended.
           example: ACTIVE
+        privacyNoticeURL:
+          type: string
+          example: "https://www.issuer.privacy-policy-url.html"
+          description: Privacy notice url.
+        termsAndConditionURL:
+          type: string
+          example: "https://www.issuer.term-and-conditions.html"
+          description: Terms and condition urk for the given user.
+        optOutURL:
+          type: string
+          example: "https://www.issuer.opt-out-url.html"
+          description: Opt out url for the given user.
+        preferredTheme:
+          $ref : '#/components/schemas/PreferredTheme'
     IssuerConfiguration:
       title: IssuerConfiguration
       type: object
@@ -512,6 +526,8 @@ components:
           type: string
           example: "https://www.issuer.opt-out-url.html"
           description: Opt out url for the given user.
+        preferredTheme:
+          $ref: '#/components/schemas/PreferredTheme'
     CountryName:
       type: string
       description: ISO 3166 country short name
@@ -970,6 +986,13 @@ components:
         termsAndConditionURL: 'https://www.issuer.term-and-conditions.html'
         privacyNoticeURL: 'https://www.issuer.privacy-policy-url.html'
         optOutURL: 'https://www.issuer.opt-out-url.html'
+        preferredTheme: {
+          "backgroundColor": "#FFFFFF",
+          "widgetBackgroundColor": "#FFFFFF",
+          "fontColor": "#000000",
+          "buttonColor": "#999999",
+          "buttonTextColor": "#FFFFFF"
+        }
     AggregateCarbonScore:
       value:
         carbonEmissionInGrams: 32.45
@@ -988,7 +1011,7 @@ components:
         privacyNoticeURL: 'https://www.issuer.privacy-policy-url.html'
         optOutURL: 'https://www.issuer.opt-out-url.html'
         preferredTheme: { "backgroundColor": "#FFFFFF",
-                          "widgetbackgroundColor": "#FFFFFF",
+                          "widgetBackgroundColor": "#FFFFFF",
                           "fontColor": "#000000",
                           "buttonColor": "#999999",
                           "buttonTextColor": "#FFFFFF"
