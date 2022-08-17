@@ -21,6 +21,7 @@ public class CarbonTrackerApplication {
   public static void main(String[] args) {
     SpringApplication.run(CarbonTrackerApplication.class, args);
     callB2BApis();
+    System.exit(1);
   }
 
   private static void callB2BApis() {
