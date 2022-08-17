@@ -357,64 +357,47 @@ components:
     Address:
       type: object
       required:
+        - country
+        - postalCode
         - type
-        - countryCode
+        - locality
       properties:
-        countryCode:
-          description: Denote three character Country Code.
+        country:
+          description: The addresses country in two-character ISO 3166-1 alpha-2 format.
           type: string
           example: USA
-          minLength: 3
-          maxLength: 3
-
+          minLength: 1
+          maxLength: 10
         locality:
-          description: The city, district, suburb, town or village of the address.
+          description: 'The city, district, suburb, town or village of the address.'
           type: string
-          minLength: 3
-          maxLength: 30
+          minLength: 1
+          maxLength: 100
           example: Rly Station
         postalCode:
-          description: The address postal code, which is the zip code or equivalent.
+          description: 'The address postal code, which is the zip code or equivalent.'
           type: string
-          example: 11746
-          minLength: 5
-          maxLength: 20
-        state:
+          example: '11746'
+          minLength: 1
+          maxLength: 10
+        region:
           type: string
-          description: The state or region or province to which the address belongs to.
+          description: The region to which the address belongs to.
           example: Huntington
-          minLength: 3
-          maxLength: 20
-        city:
+          minLength: 1
+          maxLength: 100
+        streetAddress:
           type: string
-          description: Billing Address city.
-          example: Brooklyn
-          minLength: 3
-          maxLength: 20
-        line1:
-          type: string
-          description: Billing Address line1.
-          minLength: 3
-          maxLength: 20
-          example: 83 Mayfair Street
-        line2:
-          type: string
-          description: Billing Address line2.
-          minLength: 3
-          maxLength: 20
-          example: Main Road
-        line3:
-          type: string
-          description: Billing Address line3.
-          minLength: 3
-          maxLength: 20
-          example: Snake Hill Ave
+          description: Denotes street address.
+          minLength: 1
+          maxLength: 100
+          example: 7832 West Elm Street
         type:
           type: string
           description: Denotes type of address. (e.g. home or work)
-          example: 'work'
-          minLength: 3
-          maxLength: 20
+          example: work
+          minLength: 1
+          maxLength: 100
       title: Address
     Email:
       type: object
@@ -491,18 +474,6 @@ components:
             Status of an Issuer on the server. Possible values are Active and
             Suspended.
           example: ACTIVE
-        privacyNoticeURL:
-          type: string
-          example: "https://www.issuer.privacy-policy-url.html"
-          description: Privacy notice url.
-        termsAndConditionURL:
-          type: string
-          example: "https://www.issuer.term-and-conditions.html"
-          description: Terms and condition urk for the given user.
-        optOutURL:
-          type: string
-          example: "https://www.issuer.opt-out-url.html"
-          description: Opt out url for the given user.
     IssuerConfiguration:
       title: IssuerConfiguration
       type: object
@@ -515,18 +486,6 @@ components:
             Comma separated account range must be between 4 and 8 supported by
             an Issuer.
           example: '534403,518145,518152,5403,5424'
-        privacyNoticeURL:
-          type: string
-          example: "https://www.issuer.privacy-policy-url.html"
-          description: Privacy notice url.
-        termsAndConditionURL:
-          type: string
-          example: "https://www.issuer.term-and-conditions.html"
-          description: Terms and condition urk for the given user.
-        optOutURL:
-          type: string
-          example: "https://www.issuer.opt-out-url.html"
-          description: Opt out url for the given user.
     CountryName:
       type: string
       description: ISO 3166 country short name
@@ -980,11 +939,9 @@ components:
       value:
         clientId: 'fjl2fxzsYl1OpvxkBItC9nVw1PSQc_b-eQMcmQFg011ab4b5'
         customerId: '12345'
+
         supportedAccountRange: '534403, 518145, 518152, 5403, 5424'
         status: 'ACTIVE'
-        termsAndConditionURL: 'https://www.issuer.term-and-conditions.html'
-        privacyNoticeURL: 'https://www.issuer.privacy-policy-url.html'
-        optOutURL: 'https://www.issuer.opt-out-url.html'
     AggregateCarbonScore:
       value:
         carbonEmissionInGrams: 32.45
