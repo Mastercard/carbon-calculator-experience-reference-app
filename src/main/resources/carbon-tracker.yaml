@@ -212,7 +212,7 @@ components:
               $ref: '#/components/examples/UserIDs'
   schemas:
     IssuerProfileDetails:
-      title: IssuerProfileDetails
+      title: IssuerProfile
       type: object
       description: Information about an Issuer as available on the server.
       required:
@@ -226,7 +226,6 @@ components:
         - termsAndConditionURL
         - privacyNoticeURL
         - optOutURL
-        - preferredTheme
       properties:
         clientId:
           type: string
@@ -290,19 +289,6 @@ components:
           type: string
           example: 'https://www.issuer.opt-out-url.html'
           description: OPT out URL for the given user.
-        preferredTheme:
-          $ref: '#/components/schemas/PreferredTheme'
-    PreferredTheme:
-      type: object
-      additionalProperties:
-        type: string
-      example: {
-        "backgroundColor": "#FFFFFF",
-        "widgetBackgroundColor": "#FFFFFF",
-        "fontColor": "#000000",
-        "buttonColor": "#999999",
-        "buttonTextColor": "#FFFFFF"
-      }
     UserProfile:
       title: UserProfile
       type: object
@@ -371,47 +357,64 @@ components:
     Address:
       type: object
       required:
-        - country
-        - postalCode
         - type
-        - locality
+        - countryCode
       properties:
-        country:
-          description: The addresses country in two-character ISO 3166-1 alpha-2 format.
+        countryCode:
+          description: Denote three character Country Code.
           type: string
           example: USA
-          minLength: 1
-          maxLength: 10
+          minLength: 3
+          maxLength: 3
+
         locality:
-          description: 'The city, district, suburb, town or village of the address.'
+          description: The city, district, suburb, town or village of the address.
           type: string
-          minLength: 1
-          maxLength: 100
+          minLength: 3
+          maxLength: 30
           example: Rly Station
         postalCode:
-          description: 'The address postal code, which is the zip code or equivalent.'
+          description: The address postal code, which is the zip code or equivalent.
           type: string
-          example: '11746'
-          minLength: 1
-          maxLength: 10
-        region:
+          example: 11746
+          minLength: 5
+          maxLength: 20
+        state:
           type: string
-          description: The region to which the address belongs to.
+          description: The state or region or province to which the address belongs to.
           example: Huntington
-          minLength: 1
-          maxLength: 100
-        streetAddress:
+          minLength: 3
+          maxLength: 20
+        city:
           type: string
-          description: Denotes street address.
-          minLength: 1
-          maxLength: 100
-          example: 7832 West Elm Street
+          description: Billing Address city.
+          example: Brooklyn
+          minLength: 3
+          maxLength: 20
+        line1:
+          type: string
+          description: Billing Address line1.
+          minLength: 3
+          maxLength: 20
+          example: 83 Mayfair Street
+        line2:
+          type: string
+          description: Billing Address line2.
+          minLength: 3
+          maxLength: 20
+          example: Main Road
+        line3:
+          type: string
+          description: Billing Address line3.
+          minLength: 3
+          maxLength: 20
+          example: Snake Hill Ave
         type:
           type: string
           description: Denotes type of address. (e.g. home or work)
-          example: work
-          minLength: 1
-          maxLength: 100
+          example: 'work'
+          minLength: 3
+          maxLength: 20
       title: Address
     Email:
       type: object
@@ -500,8 +503,6 @@ components:
           type: string
           example: "https://www.issuer.opt-out-url.html"
           description: Opt out url for the given user.
-        preferredTheme:
-          $ref : '#/components/schemas/PreferredTheme'
     IssuerConfiguration:
       title: IssuerConfiguration
       type: object
@@ -509,7 +510,7 @@ components:
       properties:
         supportedAccountRange:
           type: string
-          pattern: ^[0-9]{4,8}(,[0-9]{4,8})*$
+          pattern: '^[0-9]{4,8}(,[0-9]{4,8})*$'
           description: >-
             Comma separated account range must be between 4 and 8 supported by
             an Issuer.
@@ -526,8 +527,6 @@ components:
           type: string
           example: "https://www.issuer.opt-out-url.html"
           description: Opt out url for the given user.
-        preferredTheme:
-          $ref: '#/components/schemas/PreferredTheme'
     CountryName:
       type: string
       description: ISO 3166 country short name
@@ -588,7 +587,7 @@ components:
           minLength: 1
           maxLength: 5000
           example: >-
-            https://ppctwebview.b221.net/home/?auth_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
+            https://ppctwebview.b221.net/home/?auth_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c&lang=en
         expiryInMillis:
           type: string
           description: Denotes expiry limit for the URL.
@@ -986,13 +985,6 @@ components:
         termsAndConditionURL: 'https://www.issuer.term-and-conditions.html'
         privacyNoticeURL: 'https://www.issuer.privacy-policy-url.html'
         optOutURL: 'https://www.issuer.opt-out-url.html'
-        preferredTheme: {
-          "backgroundColor": "#FFFFFF",
-          "widgetBackgroundColor": "#FFFFFF",
-          "fontColor": "#000000",
-          "buttonColor": "#999999",
-          "buttonTextColor": "#FFFFFF"
-        }
     AggregateCarbonScore:
       value:
         carbonEmissionInGrams: 32.45
@@ -1010,12 +1002,6 @@ components:
         termsAndConditionURL: 'https://www.issuer.term-and-conditions.html'
         privacyNoticeURL: 'https://www.issuer.privacy-policy-url.html'
         optOutURL: 'https://www.issuer.opt-out-url.html'
-        preferredTheme: { "backgroundColor": "#FFFFFF",
-                          "widgetBackgroundColor": "#FFFFFF",
-                          "fontColor": "#000000",
-                          "buttonColor": "#999999",
-                          "buttonTextColor": "#FFFFFF"
-        }
     UserNotFoundError:
       value:
         Errors:
