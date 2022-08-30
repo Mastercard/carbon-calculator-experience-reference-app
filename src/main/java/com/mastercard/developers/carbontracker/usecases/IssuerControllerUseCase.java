@@ -10,6 +10,7 @@ import net.bytebuddy.utility.RandomString;
 import org.openapitools.client.model.Address;
 import org.openapitools.client.model.AggregateCarbonScore;
 import org.openapitools.client.model.CardExpiry;
+import org.openapitools.client.model.Dashboard;
 import org.openapitools.client.model.Email;
 import org.openapitools.client.model.IssuerConfiguration;
 import org.openapitools.client.model.IssuerProfile;
@@ -17,7 +18,6 @@ import org.openapitools.client.model.IssuerProfileDetails;
 import org.openapitools.client.model.UserName;
 import org.openapitools.client.model.UserProfile;
 import org.openapitools.client.model.UserReference;
-import org.openapitools.client.model.Dashboard;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
@@ -76,6 +76,10 @@ public class IssuerControllerUseCase {
             log.info("Updating issuer details ");
             IssuerConfiguration issuerConfiguration = new IssuerConfiguration();
             issuerConfiguration.setSupportedAccountRange("5051");
+
+            issuerConfiguration.setOptOutURL("https://www.google1234.com");
+            issuerConfiguration.setPrivacyNoticeURL(" https://www.google12.com");
+            issuerConfiguration.setTermsAndConditionURL(" https://www.google.com");
             IssuerProfile issuerProfile = issuerService.updateIssuer(issuerConfiguration);
             log.info("Response received after updating the issuer {}", issuerProfile);
         } catch (ServiceException e) {
@@ -154,12 +158,15 @@ public class IssuerControllerUseCase {
         cardExpiry.setYear("2024");
         Address address = new Address();
 
-        address.setCountry("USA");
+        address.setCountryCode("USA");
         address.setLocality("rly station");
         address.setPostalCode("11746");
-        address.setRegion("Huntington");
-        address.setStreetAddress("7832 West Elm Street");
+        address.setState("Huntington");
+        address.setLine1("7832 West Elm Street");
+        address.setLine2("Huntington 12");
+        address.setLine3("7832 West ");
         address.setType("work");
+        address.setCity("Brooklyn");
         userProfile.setBillingAddress(address);
         userProfile.setExpiryInfo(cardExpiry);
         userProfile.setLocale("en-US");
