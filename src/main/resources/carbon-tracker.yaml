@@ -374,11 +374,9 @@ components:
           maxLength: 30
           example: Rly Station
         postalCode:
-          description: The address postal code, which is the zip code or equivalent.
+          description: The postal code in the address is the ZIP code or equivalent and can be alphanumeric value (for example, PE7 8FT). The value should not contain only a whitespace character.
           type: string
-          example: 11746
-          minLength: 5
-          maxLength: 20
+          example: '11746'
         state:
           type: string
           description: The state or region or province to which the address belongs to.
