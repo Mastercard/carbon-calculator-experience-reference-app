@@ -46,7 +46,7 @@ paths:
       summary: Fetches the Issuer details.
       description: >-
         Allows fetching the Issuer details onboarded on the Carbon Calculator
-        Experience.
+        Experience. This API returns the Issuer's available details like a supported account range, currency code, and country code along with the color theme.
       operationId: getIssuer
       responses:
         '200':
@@ -104,6 +104,31 @@ paths:
           $ref: '#/components/responses/IssuerNotFoundError'
         '415':
           $ref: '#/components/responses/UnsupportedMediaTypeError'
+
+  /issuers/users/{userid}:
+    put:
+      tags:
+        - Issuer
+      summary: Allows issuer to update enrolled user information onto Carbon Calculator Expereince Service.
+      description: Used to update the user's information for Carbon Calculator Experience.
+      operationId: updateUser
+      parameters:
+        - $ref: '#/components/parameters/UserID'
+      x-mastercard-api-encrypted: true
+      requestBody:
+        $ref: '#/components/requestBodies/UpdateUserProfile'
+      responses:
+        "200":
+          $ref: '#/components/responses/UpdateUserReference'
+        "400":
+          $ref: '#/components/responses/UserEnrolmentBadRequestError'
+        "401":
+          $ref: '#/components/responses/UserEnrolmentUnauthorisedError'
+        "404":
+          $ref: '#/components/responses/IssuerNotFoundError'
+        "415":
+          $ref: '#/components/responses/UnsupportedMediaTypeError'
+
   '/issuers/users/{userid}/dashboards':
     get:
       tags:
@@ -210,9 +235,20 @@ components:
           examples:
             UserIDs:
               $ref: '#/components/examples/UserIDs'
+    UpdateUserProfile:
+      description: >-
+        The request object for updating a enrolled user onto Carbon Calculator Expereince Service. This endpoint uses the Mastercard payload
+        encryption. Refer to the **[Payload
+        Encryption](https://developer.mastercard.com/platform/documentation/security-and-authentication/securing-sensitive-data-using-payload-encryption/#mastercard-encryption)**
+        page for implementation details.
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/UpdateUserProfile'
   schemas:
     IssuerProfileDetails:
-      title: IssuerProfile
+      title: IssuerProfileDetails
       type: object
       description: Information about an Issuer as available on the server.
       required:
@@ -226,6 +262,7 @@ components:
         - termsAndConditionURL
         - privacyNoticeURL
         - optOutURL
+        - preferredTheme
       properties:
         clientId:
           type: string
@@ -289,6 +326,8 @@ components:
           type: string
           example: 'https://www.issuer.opt-out-url.html'
           description: OPT out URL for the given user.
+        preferredTheme:
+          $ref: '#/components/schemas/PreferredTheme'
     UserProfile:
       title: UserProfile
       type: object
@@ -450,6 +489,24 @@ components:
           maxLength: 100
           example: Doe
       title: Username
+    UpdateUserProfile:
+      title: UpdateUserProfile
+      type: object
+      description: The request object for updating a enrolled user onto Carbon Calculator Expereince Service.
+      required:
+        - name
+        - locale
+      properties:
+        name:
+          $ref: '#/components/schemas/UserName'
+        billingAddress:
+          $ref: '#/components/schemas/Address'
+        locale:
+          type: string
+          description: Updating User locale which is registered with issuer.
+          minLength: 1
+          maxLength: 100
+          example: en-US
     IssuerProfile:
       title: IssuerProfile
       type: object
@@ -477,7 +534,7 @@ components:
           example: customerid1
         supportedAccountRange:
           type: string
-          pattern: '^[0-9]{4,8}(,[0-9]{4,8})*$'
+          pattern: '^\s*[0-9]{4,8}(\s*,\s*[0-9]{4,8})*\s*$'
           description: >-
             Comma separated account range must be between 4 and 8 supported by
             an Issuer.
@@ -502,6 +559,9 @@ components:
           type: string
           example: "https://www.issuer.opt-out-url.html"
           description: Opt out url for the given user.
+        preferredTheme:
+          description: Color hex code to set preferred colors for webview.
+          $ref : '#/components/schemas/PreferredTheme'
     IssuerConfiguration:
       title: IssuerConfiguration
       type: object
@@ -509,7 +569,7 @@ components:
       properties:
         supportedAccountRange:
           type: string
-          pattern: '^[0-9]{4,8}(,[0-9]{4,8})*$'
+          pattern: '^\s*[0-9]{4,8}(\s*,\s*[0-9]{4,8})*\s*$'
           description: >-
             Comma separated account range must be between 4 and 8 supported by
             an Issuer.
@@ -526,6 +586,9 @@ components:
           type: string
           example: "https://www.issuer.opt-out-url.html"
           description: Opt out url for the given user.
+        preferredTheme:
+          description: Color hex code to set preferred colors for webview.
+          $ref: '#/components/schemas/PreferredTheme'
     CountryName:
       type: string
       description: ISO 3166 country short name
@@ -682,6 +745,20 @@ components:
           minLength: 0
           maxLength: 5000
           example: email must not be null.
+
+    PreferredTheme:
+      type: object
+      additionalProperties:
+        type: string
+      description: >-
+        Color hex code to set preferred colors for webview.
+      example: {
+        "backgroundColor": "#FFFFFF",
+        "widgetBackgroundColor": "#FFFFFF",
+        "fontColor": "#000000",
+        "buttonColor": "#999999",
+        "buttonTextColor": "#FFFFFF"
+      }
   parameters:
     UserID:
       in: path
@@ -736,6 +813,12 @@ components:
       description: >-
         The response object that contains Payment Card information after
         successful registration.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/UserReference'
+    UpdateUserReference:
+      description: The response object that contains userID and Payment Card information after successful updation of users personal information.
       content:
         application/json:
           schema:
@@ -970,6 +1053,12 @@ components:
               $ref: '#/components/examples/UserCountError'
             InvalidUserIdLengthError:
               $ref: '#/components/examples/InvalidUserIdLengthError'
+    PreferredTheme:
+      description: Preferred theme successfully retrieved.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/PreferredTheme'
   examples:
     UserIDs:
       value:
@@ -979,11 +1068,18 @@ components:
       value:
         clientId: 'fjl2fxzsYl1OpvxkBItC9nVw1PSQc_b-eQMcmQFg011ab4b5'
         customerId: '12345'
-        supportedAccountRange: '534403, 518145, 518152, 5403, 5424'
+        supportedAccountRange: '534403,518145,518152,5403,5424'
         status: 'ACTIVE'
         termsAndConditionURL: 'https://www.issuer.term-and-conditions.html'
         privacyNoticeURL: 'https://www.issuer.privacy-policy-url.html'
         optOutURL: 'https://www.issuer.opt-out-url.html'
+        preferredTheme: {
+          "backgroundColor": "#FFFFFF",
+          "widgetBackgroundColor": "#FFFFFF",
+          "fontColor": "#000000",
+          "buttonColor": "#999999",
+          "buttonTextColor": "#FFFFFF"
+        }
     AggregateCarbonScore:
       value:
         carbonEmissionInGrams: 32.45
@@ -1001,6 +1097,13 @@ components:
         termsAndConditionURL: 'https://www.issuer.term-and-conditions.html'
         privacyNoticeURL: 'https://www.issuer.privacy-policy-url.html'
         optOutURL: 'https://www.issuer.opt-out-url.html'
+        preferredTheme: {
+          "backgroundColor": "#FFFFFF",
+          "widgetBackgroundColor": "#FFFFFF",
+          "fontColor": "#000000",
+          "buttonColor": "#999999",
+          "buttonTextColor": "#FFFFFF"
+        }
     UserNotFoundError:
       value:
         Errors:

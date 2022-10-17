@@ -108,8 +108,8 @@ class IssuerServiceImplTest {
   }
 
   @Test
-  @DisplayName("Update user")
-  void testUpdateUser() throws Exception {
+  @DisplayName("Update issuer")
+  void testUpdateIssuer() throws Exception {
 
     issuerApiForNonEncryptedPayload = mock(IssuerApi.class);
     ReflectionTestUtils.setField(issuerService, "issuerApiForNonEncryptedPayload", issuerApiForNonEncryptedPayload);
@@ -119,8 +119,8 @@ class IssuerServiceImplTest {
   }
 
   @Test
-  @DisplayName("update user throws exception")
-  void testUpdateUserThrowsException() throws Exception {
+  @DisplayName("update issuer throws exception")
+  void testUpdateIssuerThrowsException() throws Exception {
 
     issuerApiForNonEncryptedPayload = mock(IssuerApi.class);
     ReflectionTestUtils.setField(issuerService, "issuerApiForNonEncryptedPayload", issuerApiForNonEncryptedPayload);

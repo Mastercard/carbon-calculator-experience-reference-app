@@ -3,6 +3,7 @@ package com.mastercard.developers.carbontracker.controller;
 import com.mastercard.developers.carbontracker.exception.ServiceException;
 import com.mastercard.developers.carbontracker.service.GetDashboardService;
 import com.mastercard.developers.carbontracker.service.IssuerService;
+import com.mastercard.developers.carbontracker.service.UpdateUserService;
 import com.mastercard.developers.carbontracker.service.UserRegistrationService;
 import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
@@ -11,6 +12,7 @@ import org.openapitools.client.model.Dashboard;
 import org.openapitools.client.model.IssuerConfiguration;
 import org.openapitools.client.model.IssuerProfile;
 import org.openapitools.client.model.IssuerProfileDetails;
+import org.openapitools.client.model.UpdateUserProfile;
 import org.openapitools.client.model.UserProfile;
 import org.openapitools.client.model.UserReference;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,6 +36,7 @@ import static com.mastercard.developers.carbontracker.util.ServiceEndpoints.AGGR
 import static com.mastercard.developers.carbontracker.util.ServiceEndpoints.DASHBOARDS;
 import static com.mastercard.developers.carbontracker.util.ServiceEndpoints.DELETE_USER;
 import static com.mastercard.developers.carbontracker.util.ServiceEndpoints.GET_ISSUER;
+import static com.mastercard.developers.carbontracker.util.ServiceEndpoints.UPDATE_ISSUER;
 import static com.mastercard.developers.carbontracker.util.ServiceEndpoints.UPDATE_USER;
 
 @RestController
@@ -47,11 +50,14 @@ public class IssuerController {
 
   private final GetDashboardService getDashboardService;
 
+  private final UpdateUserService updateUserService;
+
   @Autowired
-  public IssuerController(IssuerService issuerService, UserRegistrationService userRegistrationService, GetDashboardService getDashboardService) {
+  public IssuerController(IssuerService issuerService, UserRegistrationService userRegistrationService, GetDashboardService getDashboardService, UpdateUserService updateUserService) {
     this.issuerService = issuerService;
     this.userRegistrationService = userRegistrationService;
     this.getDashboardService = getDashboardService;
+    this.updateUserService = updateUserService;
   }
 
   @GetMapping(DASHBOARDS)
@@ -71,11 +77,18 @@ public class IssuerController {
     return ResponseEntity.ok(userRegistrationService.userRegistration(userProfile));
   }
 
-  @PutMapping(UPDATE_USER)
+  @PutMapping(UPDATE_ISSUER)
   public ResponseEntity<IssuerProfile> updateIssuer(@ApiParam(value = " issuer configuration", required = true) @Valid @RequestBody IssuerConfiguration issuerConfiguration) throws ServiceException {
 
     IssuerProfile issuerProfile = issuerService.updateIssuer(issuerConfiguration);
     return ResponseEntity.ok(issuerProfile);
+  }
+
+  @PutMapping(UPDATE_USER)
+  public ResponseEntity<UserReference> updateUser(@Pattern(regexp = "^[0-9A-Fa-f-]{36}") @Size(min = 36, max = 36) @ApiParam(value = "Unique identifier for a cardholder enrolled into Priceless Planet Carbon Tracker Service.", required = true) @PathVariable("userid") String userId, @ApiParam(value = " User's Personal information which needs to be updated for enrolled user onto Priceless Planet Carbon Tracker platform. This endpoint uses Mastercard payload encryption. Please refer to the **[Payload Encryption](https://mstr.cd/2UPfda0)** page for implementation details.", required = true) @Valid @RequestBody UpdateUserProfile updateUserProfile) throws ServiceException {
+
+    UserReference userReference = updateUserService.updateUser(userId, updateUserProfile);
+    return ResponseEntity.ok(userReference);
   }
 
   @PostMapping(DELETE_USER)
