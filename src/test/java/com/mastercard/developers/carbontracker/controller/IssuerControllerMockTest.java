@@ -5,6 +5,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.mastercard.developers.carbontracker.service.GetDashboardService;
 import com.mastercard.developers.carbontracker.service.IssuerService;
+import com.mastercard.developers.carbontracker.service.UpdateUserService;
 import com.mastercard.developers.carbontracker.service.UserRegistrationService;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
@@ -19,6 +20,8 @@ import org.openapitools.client.model.Email;
 import org.openapitools.client.model.IssuerConfiguration;
 import org.openapitools.client.model.IssuerProfile;
 import org.openapitools.client.model.IssuerProfileDetails;
+import org.openapitools.client.model.UpdateUserProfile;
+import org.openapitools.client.model.UserName;
 import org.openapitools.client.model.UserProfile;
 import org.openapitools.client.model.UserReference;
 import org.springframework.http.HttpStatus;
@@ -36,9 +39,11 @@ import static com.mastercard.developers.carbontracker.util.ServiceEndpoints.AGGR
 import static com.mastercard.developers.carbontracker.util.ServiceEndpoints.DASHBOARDS;
 import static com.mastercard.developers.carbontracker.util.ServiceEndpoints.DELETE_USER;
 import static com.mastercard.developers.carbontracker.util.ServiceEndpoints.GET_ISSUER;
+import static com.mastercard.developers.carbontracker.util.ServiceEndpoints.UPDATE_ISSUER;
 import static com.mastercard.developers.carbontracker.util.ServiceEndpoints.UPDATE_USER;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -58,6 +63,9 @@ class IssuerControllerMockTest {
 
   @Mock
   private GetDashboardService getDashboardService;
+
+  @Mock
+  private UpdateUserService updateUserService;
 
   private MockMvc mockMvc;
 
@@ -138,7 +146,7 @@ class IssuerControllerMockTest {
     final String range = "5050,5051";
     issuerConfiguration.setSupportedAccountRange(range);
 
-    MvcResult mvcResult = mockMvc.perform(put(UPDATE_USER).contentType("application/json").header(X_OPENAPI_CLIENTID, CLIENTID)
+    MvcResult mvcResult = mockMvc.perform(put(UPDATE_ISSUER).contentType("application/json").header(X_OPENAPI_CLIENTID, CLIENTID)
       .content(new Gson().toJson(issuerConfiguration)))
       .andExpect(status().isOk()).andReturn();
 
@@ -169,6 +177,22 @@ class IssuerControllerMockTest {
 
   }
 
+  @Test
+  @DisplayName("Update User")
+  void testUpdateUser() throws Exception {
+    UpdateUserProfile updateUserProfile = new UpdateUserProfile();
+    updateUserProfile.setName(new UserName());
+    updateUserProfile.setLocale("en-US");
+    when(updateUserService.updateUser(anyString(), any())).thenReturn(new UserReference());
+    MvcResult mvcResult = mockMvc.perform(MockMvcRequestBuilders.put(UPDATE_USER, "userId")
+            .contentType("application/json").header(X_OPENAPI_CLIENTID, CLIENTID).content(gson.toJson(updateUserProfile))).andExpect(status().isOk()).andReturn();
+
+    String actual = mvcResult.getResponse().getContentAsString();
+    UserReference response = gson.fromJson(actual, UserReference.class);
+    // ASSERT
+    assertNotNull(response);
+
+  }
   @Test
   @DisplayName("Test deleteUsers")
   void testDeleteUsers() throws Exception {

@@ -37,7 +37,8 @@
 		  **/com/mastercard/developers/carbontracker/exception/*,
 		  **/com/mastercard/developers/carbontracker/util/*,
 		  **/com/mastercard/developers/carbontracker/usecases/*,
-		  **/com/mastercard/developers/carbontracker/service/impl/UserRegistrationServiceImpl.java
+		  **/com/mastercard/developers/carbontracker/service/impl/UserRegistrationServiceImpl.java,
+		  **/com/mastercard/developers/carbontracker/service/impl/UpdateUserServiceImpl.java
 		</sonar.coverage.exclusions>
 
 	</properties>

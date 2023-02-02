@@ -3,6 +3,7 @@ package com.mastercard.developers.carbontracker.usecases;
 import com.mastercard.developers.carbontracker.exception.ServiceException;
 import com.mastercard.developers.carbontracker.service.GetDashboardService;
 import com.mastercard.developers.carbontracker.service.IssuerService;
+import com.mastercard.developers.carbontracker.service.UpdateUserService;
 import com.mastercard.developers.carbontracker.service.UserRegistrationService;
 import com.mastercard.developers.carbontracker.util.CreditCardGenerator;
 import lombok.extern.slf4j.Slf4j;
@@ -15,6 +16,7 @@ import org.openapitools.client.model.Email;
 import org.openapitools.client.model.IssuerConfiguration;
 import org.openapitools.client.model.IssuerProfile;
 import org.openapitools.client.model.IssuerProfileDetails;
+import org.openapitools.client.model.UpdateUserProfile;
 import org.openapitools.client.model.UserName;
 import org.openapitools.client.model.UserProfile;
 import org.openapitools.client.model.UserReference;
@@ -36,6 +38,8 @@ public class IssuerControllerUseCase {
 
     private final GetDashboardService getDashboardService;
 
+    private final UpdateUserService updateUserService;
+
     @Value("${binRange}")
     private String binRange;
 
@@ -43,10 +47,11 @@ public class IssuerControllerUseCase {
     private String lang;
 
     @Autowired
-    public IssuerControllerUseCase(IssuerService issuerService, UserRegistrationService userRegistrationService, GetDashboardService getDashboardService) {
+    public IssuerControllerUseCase(IssuerService issuerService, UserRegistrationService userRegistrationService, GetDashboardService getDashboardService, UpdateUserService updateUserService) {
         this.issuerService = issuerService;
         this.userRegistrationService = userRegistrationService;
         this.getDashboardService = getDashboardService;
+        this.updateUserService = updateUserService;
     }
 
     public void b2BCalls() {
@@ -57,6 +62,7 @@ public class IssuerControllerUseCase {
         String userId = userRegistration();
         getAggregateScores(userId);
         getDashboardUrl(userId, lang);
+        updateUser(userId);
         deleteUser(userId);
 
     }
@@ -124,6 +130,16 @@ public class IssuerControllerUseCase {
 
     }
 
+    private void updateUser(String userId) {
+        try {
+            log.info("Updating a enrolled User");
+            UserReference userReference = updateUserService.updateUser(userId, getUpdateUserProfile());
+            log.info("Response for the User information updated for given userId {} is {}", userId, userReference);
+        } catch (ServiceException ex) {
+            log.info("Exception occurred while updating enrolled a new user {}", ex.getServiceErrors());
+        }
+    }
+
     public void deleteUser(String userId) {
         log.info("Deleting user for given user {} ", userId);
         try {
@@ -156,6 +172,27 @@ public class IssuerControllerUseCase {
         CardExpiry cardExpiry = new CardExpiry();
         cardExpiry.setMonth("09");
         cardExpiry.setYear("2024");
+        userProfile.setBillingAddress(getAddress());
+        userProfile.setExpiryInfo(cardExpiry);
+        userProfile.setLocale("en-US");
+
+        return userProfile;
+    }
+
+    public UpdateUserProfile getUpdateUserProfile() {
+        UpdateUserProfile updateUserProfile = new UpdateUserProfile();
+
+        UserName userName = new UserName();
+        userName.setFirstName("dummmyUserrz");
+        userName.setLastName("Useraf");
+        updateUserProfile.setName(userName);
+        updateUserProfile.setBillingAddress(getAddress());
+        updateUserProfile.setLocale("en-US");
+
+        return updateUserProfile;
+    }
+
+    public Address getAddress() {
         Address address = new Address();
 
         address.setCountryCode("USA");
@@ -167,11 +204,7 @@ public class IssuerControllerUseCase {
         address.setLine3("7832 West ");
         address.setType("work");
         address.setCity("Brooklyn");
-        userProfile.setBillingAddress(address);
-        userProfile.setExpiryInfo(cardExpiry);
-        userProfile.setLocale("en-US");
-
-        return userProfile;
+        return address;
     }
 
 }
