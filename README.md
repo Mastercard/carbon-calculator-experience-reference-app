@@ -106,6 +106,8 @@ Use this endpoint to display the current months' carbon score, to provide a snap
 3. **Enroll User** <br/>
 endpoint "/issuers/users" <br/>
 Use this endpoint to enrol their customers onto Carbon Calculator Experience platform.
+Donate feature toggle, which allows the issuer to disable the donate feature during onboarding.
+If the issuer has opted for the Donation feature then the fields - *name, billing address, email, locale, cardholder name, card number, card base currency and card expiry date* fields are **mandatory** in the payload.
 
 4. **Get Issuer** <br/>
 endpoint "/issuers" <br/>
@@ -118,6 +120,7 @@ Use this endpoint to delete user registered to Carbon Calculator Experience plat
 6. **Update Issuer** <br/>
 endpoint "/issuers"<br/>
 Use this endpoint to update issuer details onboarded to Carbon Calculator Experience Platform.
+This endpoint is not supported when the Donate feature for your bank is disabled.
 
 More details can be found [here](https://stage.developer.mastercard.com/drafts/priceless-planet-carbon-tracker/staging/documentation/use-cases/).    
 

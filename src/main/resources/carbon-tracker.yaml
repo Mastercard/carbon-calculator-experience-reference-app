@@ -89,6 +89,10 @@ paths:
         Used to enroll users for the Carbon Calculator Experience API so that
         they can track the carbon usage for their transactions and and provides
         them with an option to donate towards tree plantations.
+
+
+        **Note-**
+         If the issuer has opted for the Donation feature then the fields - *name, billing address, email, locale, cardholder name, card number, card base currency and card expiry date* fields are **mandatory** in the payload.
       operationId: userRegistration
       x-mastercard-api-encrypted: true
       requestBody:
@@ -123,7 +127,7 @@ paths:
         "400":
           $ref: '#/components/responses/UserEnrolmentBadRequestError'
         "401":
-          $ref: '#/components/responses/UserEnrolmentUnauthorisedError'
+          $ref: '#/components/responses/UpdateUserUnauthorisedError'
         "404":
           $ref: '#/components/responses/IssuerNotFoundError'
         "415":
@@ -336,10 +340,7 @@ components:
         Experience API.
       required:
         - cardNumber
-        - billingAddress
         - email
-        - locale
-        - name
         - expiryInfo
         - cardBaseCurrency
         - cardholderName
@@ -963,6 +964,21 @@ components:
               $ref: '#/components/examples/IssuerSuspendedError'
             IssuerTerminatedError:
               $ref: '#/components/examples/IssuerTerminatedError'
+    UpdateUserUnauthorisedError:
+      description: This response code is returned for unauthorized Issuer and User.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorWrapper'
+          examples:
+            IssuerInactiveError:
+              $ref: '#/components/examples/IssuerInactiveError'
+            IssuerSuspendedError:
+              $ref: '#/components/examples/IssuerSuspendedError'
+            IssuerTerminatedError:
+              $ref: '#/components/examples/IssuerTerminatedError'
+            UpdateUserNotAccessible:
+              $ref: '#/components/examples/UpdateUserNotAccessible'
     AggregateCarbonScoreNotFoundError:
       description: This response code is returned when a user or Issuer is not present.
       content:
@@ -1007,6 +1023,7 @@ components:
           examples:
             InvalidUserIdError:
               $ref: '#/components/examples/InvalidUserIdError'
+
     AggregateCarbonScoreBadRequestError:
       description: >-
         This response code is returned when a request is invalid or data in the
@@ -1138,6 +1155,17 @@ components:
                 request.
               Recoverable: false
               Details: 'Email must be in the format: xyz@mail.com'
+    UpdateUserNotAccessible:
+      value:
+        Errors:
+          Error:
+            - Source: CARBON CALCULATOR EXPERIENCE
+              ReasonCode: UPDATE_USER_NOT_ACCESSIBLE
+              Description: >-
+                You do not have permission to access this API. The Donate feature for your bank is disabled.
+              Recoverable: false
+              Details: >-
+                You do not have permission to access this API. The Donate feature for your bank is disabled.
     IssuerEmptyRequestBodyError:
       value:
         Errors:
