@@ -97,7 +97,7 @@ See also:
 ## Use-Cases <a name="use-cases"></a>
 1. **Get Webview URL** <br/>
    endpoint "/issuers/users/{userid}/dashboards"   
-   Use this endpoint to get a new token with expiry specified. Language code "lang=en-US" can be passed as query parameter (Not mandatory). Supported lang "en-US,es-419,sv,es-CL,es-CR,pl-PL". Default is "en-US".
+   Use this endpoint to get a new token with expiry specified. Language code "lang=en-US" can be passed as query parameter (Not mandatory). Supported lang "en-US,es-419,sv,es-CL,es-CR,pl-PL,ms-MY". Default is "en-US".
 
 2. **Get Current Months Carbon Score** <br/>
    endpoint "/issuers/users/{userid}/aggregate-carbon-scores"<br/>
