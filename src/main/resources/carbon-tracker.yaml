@@ -1399,8 +1399,8 @@ components:
               Recoverable: false
               Details: >-
                 Your account has been suspended temporarily, kindly contact your
-                Mastercard associate to activate it again. Until then you won't
-                be able to access any service.
+                Mastercard associate to activate it again. "Until then you won't
+                be able to access any service".
     UserTerminatedError:
       value:
         Errors:
