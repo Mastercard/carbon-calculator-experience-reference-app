@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>2.4.5</version>
+		<version>3.4.0</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.mastercard.developers</groupId>
@@ -14,16 +14,15 @@
 	<name>carbon-calculator-experience</name>
 	<description>carbon calculator experience reference application</description>
 	<properties>
-		<java.version>11</java.version>
-		<okhttp-version>4.9.1</okhttp-version>
+		<java.version>17</java.version>
+		<okhttp-version>4.12.0</okhttp-version>
 		<commons-lang3-version>3.11</commons-lang3-version>
-		<javax-annotation-version>1.3.2</javax-annotation-version>
 		<oauth1-signer-version>1.5.0</oauth1-signer-version>
 		<client-encryption-version>1.5.0</client-encryption-version>
 		<junit-version>4.13.1</junit-version>
-		<gson-version>2.8.9</gson-version>
+		<gson-version>2.11.0</gson-version>
 		<gson-fire-version>1.8.5</gson-fire-version>
-		<swagger-core-version>1.6.2</swagger-core-version>
+		<swagger-core-version>1.6.14</swagger-core-version>
 		<javax-annotation-version>1.3.2</javax-annotation-version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<default.package>com.mastercard.developers.carbontracker</default.package>
@@ -56,7 +55,6 @@
 		<dependency>
 			<groupId>org.springframework.data</groupId>
 			<artifactId>spring-data-commons</artifactId>
-			<version>2.5.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.projectlombok</groupId>
@@ -135,12 +133,12 @@
 		<dependency>
 			<groupId>io.springfox</groupId>
 			<artifactId>springfox-swagger2</artifactId>
-			<version>2.9.2</version>
+			<version>2.10.5</version>
 		</dependency>
 		<dependency>
 			<groupId>commons-io</groupId>
 			<artifactId>commons-io</artifactId>
-			<version>2.7</version>
+			<version>2.18.0</version>
 		</dependency>
 
 	</dependencies>
@@ -150,6 +148,15 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
+				<version>3.2.4</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>repackage</goal>
+						</goals>
+
+					</execution>
+				</executions>
 				<configuration>
 					<excludes>
 						<exclude>
@@ -182,7 +189,7 @@
 			<plugin>
 				<groupId>org.openapitools</groupId>
 				<artifactId>openapi-generator-maven-plugin</artifactId>
-				<version>5.1.0</version>
+				<version>4.3.1</version>
 				<executions>
 					<execution>
 						<id>Carbon tracker REST Client</id>
@@ -197,7 +204,14 @@
 							<configOptions>
 								<sourceFolder>src/gen/java/main</sourceFolder>
 								<hideGenerationTimestamp>true</hideGenerationTimestamp>
+								<lombok>true</lombok>
+								<interfaceOnly>true</interfaceOnly>
+								<validateSpec>false</validateSpec>
 								<dateLibrary>java8</dateLibrary>
+								<useSpringBoot3>true</useSpringBoot3>
+								<delegatePattern>false</delegatePattern>
+								<generatedConstructorWithRequiredArgs>false</generatedConstructorWithRequiredArgs>
+								<useJakartaEe>true</useJakartaEe>
 							</configOptions>
 							<typeMappings>
 								<typeMapping>Date=LocalDate</typeMapping>
@@ -209,7 +223,7 @@
       <plugin>
         <groupId>org.jacoco</groupId>
         <artifactId>jacoco-maven-plugin</artifactId>
-        <version>0.8.6</version>
+        <version>0.8.11</version>
         <configuration>
           <excludes>
             <exclude>com.mastercard.developers.carbontracker.CarbonTrackerApplication</exclude>
@@ -243,6 +257,16 @@
           </execution>
         </executions>
       </plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.8.1</version>
+				<configuration>
+					<parameters>true</parameters>
+					<source>17</source>
+					<target>17</target>
+				</configuration>
+			</plugin>
 		</plugins>
 	</build>
 

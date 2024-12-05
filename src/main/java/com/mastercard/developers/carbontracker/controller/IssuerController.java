@@ -6,6 +6,9 @@ import com.mastercard.developers.carbontracker.service.IssuerService;
 import com.mastercard.developers.carbontracker.service.UpdateUserService;
 import com.mastercard.developers.carbontracker.service.UserRegistrationService;
 import io.swagger.annotations.ApiParam;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import lombok.extern.slf4j.Slf4j;
 import org.openapitools.client.model.AggregateCarbonScore;
 import org.openapitools.client.model.Dashboard;
@@ -26,9 +29,6 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.validation.Valid;
-import javax.validation.constraints.Pattern;
-import javax.validation.constraints.Size;
 import java.util.List;
 
 import static com.mastercard.developers.carbontracker.util.ServiceEndpoints.ADD_USER;
