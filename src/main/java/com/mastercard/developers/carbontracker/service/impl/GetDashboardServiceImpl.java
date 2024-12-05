@@ -48,7 +48,7 @@ public class GetDashboardServiceImpl implements GetDashboardService {
         try {
             dashboard = issuerApiForDecryptedPayload.getAuthToken(userPpctId, lang);
         } catch (ApiException e) {
-            log.error("Exception occurred while registering new user {}", e.getResponseBody());
+            log.error("Exception occurred while fetching dashboard token {}", e.getResponseBody());
 
             throw new ServiceException(e.getMessage(), deserializeErrors(e.getResponseBody()));
         }

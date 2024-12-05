@@ -171,7 +171,7 @@ public class IssuerControllerUseCase {
 
         CardExpiry cardExpiry = new CardExpiry();
         cardExpiry.setMonth("09");
-        cardExpiry.setYear("2024");
+        cardExpiry.setYear("2039");
         userProfile.setBillingAddress(getAddress());
         userProfile.setExpiryInfo(cardExpiry);
         userProfile.setLocale("en-US");
